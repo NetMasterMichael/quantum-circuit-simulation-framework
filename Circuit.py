@@ -2,6 +2,8 @@ import numpy as np
 
 class Circuit:
 
+    HADAMARD = (1 / np.sqrt(2)) * np.array([[1, 1], [1, -1]])
+
     def __init__(self, qubits):
         # For now, this will be all |0>
         self._qubits = np.array([[1.0, 0.0]] * qubits)
@@ -17,3 +19,6 @@ class Circuit:
             return True
         else:
             return False
+        
+    def hadamard(self, qubit_index):
+        self._qubits[qubit_index] = np.dot(Circuit.HADAMARD, self._qubits[qubit_index])
