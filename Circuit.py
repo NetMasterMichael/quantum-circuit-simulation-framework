@@ -12,6 +12,9 @@ class Circuit:
 
     def get_qubit(self, qubit_index):
         return self._qubits[qubit_index]
+    
+    def get_all_qubits(self):
+        return self._qubits
 
     def set_qubit(self, qubit_index, new_state):
         # Validate that it is a valid quantum state
