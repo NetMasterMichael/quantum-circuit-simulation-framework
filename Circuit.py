@@ -9,6 +9,7 @@ class Circuit:
     def __init__(self, qubits):
         # For now, this will be all |0>
         self._qubits = np.array([[1.0, 0.0]] * qubits)
+        self._total_qubits = qubits
 
     def get_qubit(self, qubit_index):
         return self._qubits[qubit_index]
@@ -24,6 +25,9 @@ class Circuit:
             return True
         else:
             return False
+        
+    def get_total_qubits(self):
+        return self._total_qubits
         
     def round(self, qubit_state):
         return np.round(qubit_state, decimals=Circuit.FP_PRECISION)
