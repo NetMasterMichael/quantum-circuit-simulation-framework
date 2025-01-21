@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 class Circuit:
 
@@ -12,6 +13,7 @@ class Circuit:
         self._total_qubits = qubits
 
     def get_qubit(self, qubit_index):
+        # Note: It is currently impossible to observe a state in quantum mechanics without it collapsing! To be used for debugging only
         return self._qubits[qubit_index]
     
     def get_all_qubits(self):
@@ -43,3 +45,19 @@ class Circuit:
     def hadamard_all(self):
         for i in range(0, self._total_qubits):
             self.hadamard(i)
+
+    def measure_qubit(self, qubit_index):
+        qubit_state = self._qubits[qubit_index]
+        # Apply Born's Rule
+        qubit_state = [qubit_state[0] ** 2, qubit_state[1] ** 2]
+        # Collapse qubit to either |0> or |1>
+        probabilities_sum = np.sum(qubit_state)
+        collapse = random.uniform(0, probabilities_sum)
+        if collapse > qubit_state[0]:
+            # Collapse to |1>
+            self._qubits[qubit_index] = np.array([0, 1])
+            return np.array([0, 1])
+        else:
+            # Collapse to |0>
+            self._qubits[qubit_index] = np.array([1, 0])
+            return np.array([1, 0])
