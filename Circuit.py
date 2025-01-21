@@ -2,9 +2,9 @@ import numpy as np
 
 class Circuit:
 
+    HADAMARD = (1 / np.sqrt(2)) * np.array([[1, 1], [1, -1]])
     # Floating point precision for rounding, since this is running on a classical computer after all, which are famously bad at division
     FP_PRECISION = 15 
-    HADAMARD = (1 / np.sqrt(2)) * np.array([[1, 1], [1, -1]])
 
     def __init__(self, qubits):
         # For now, this will be all |0>
@@ -38,4 +38,8 @@ class Circuit:
 
     def hadamard_range(self, start_qubit_index, end_qubit_index):
         for i in range(start_qubit_index, end_qubit_index + 1):
+            self.hadamard(i)
+
+    def hadamard_all(self):
+        for i in range(0, self._total_qubits):
             self.hadamard(i)
