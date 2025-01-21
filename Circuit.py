@@ -28,3 +28,7 @@ class Circuit:
     def hadamard(self, qubit_index):
         new_state = self.round(np.dot(Circuit.HADAMARD, self._qubits[qubit_index]))
         self._qubits[qubit_index] = new_state
+
+    def hadamard_range(self, start_qubit_index, end_qubit_index):
+        for i in range(start_qubit_index, end_qubit_index + 1):
+            self.hadamard(i)
