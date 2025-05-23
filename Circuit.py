@@ -8,9 +8,11 @@ class Circuit:
     FP_PRECISION = 15 
 
     def __init__(self, qubits):
-        # For now, this will be all |0>
-        self._qubits = np.array([[1.0, 0.0]] * qubits)
+        # Setup basis vector of qubit states
         self._total_qubits = qubits
+        self._qubits = np.zeros(2 ** qubits)
+        # Set circuit state to |0> (tensored with # of qubits)
+        self._qubits[0] = 1
 
     def get_qubit(self, qubit_index):
         # Note: It is currently impossible to observe a state in quantum mechanics without it collapsing! To be used for debugging only
