@@ -3,13 +3,17 @@ import random
 
 class Circuit:
 
+    IDENTITY = np.array([[1,0],[0,1]])
+    PAULI_X = np.array([[0,1],[1,0]])
+    PAULI_Y = np.array([0,-1j],[1j,0])
+    PAULI_Z = np.array([[1,0],[0,-1]])
     HADAMARD = (1 / np.sqrt(2)) * np.array([[1, 1], [1, -1]])
     # Floating point precision for rounding, since this is running on a classical computer after all, which are famously bad at division
     FP_PRECISION = 15 
 
     def __init__(self, qubits):
         # Setup basis vector of qubit states
-        self._total_circuit_state = qubits
+        self._circuit_state = qubits
         self._circuit_state = np.zeros(2 ** qubits)
         # Set circuit state to |0> (tensored with # of qubits)
         self._circuit_state[0] = 1
@@ -30,9 +34,6 @@ class Circuit:
         else:
             return False
         
-    def get_total_circuit_state(self):
-        return self._total_circuit_state
-        
     def round(self, qubit_state):
         return np.round(qubit_state, decimals=Circuit.FP_PRECISION)
         
@@ -45,7 +46,7 @@ class Circuit:
             self.hadamard(i)
 
     def hadamard_all(self):
-        for i in range(0, self._total_circuit_state):
+        for i in range(0, self._circuit_state):
             self.hadamard(i)
 
     def measure_qubit(self, qubit_index):
