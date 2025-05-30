@@ -19,7 +19,7 @@ class Circuit:
         'H': HADAMARD
     }
 
-    def __init__(self, qubits: int, operator_cache: bool = True):
+    def __init__(self, qubits: int, operator_cache: bool = False):
         # Setup basis vector of qubit states
         self._qubits = qubits
         self._circuit_state = np.zeros(2 ** self._qubits)
@@ -43,12 +43,13 @@ class Circuit:
         operator_construction = [None] * self._qubits
         # Fill the operator construction with gates present in the gates variable (expected to be partial)
         for gate in gates:
+            # Read the 2nd index, which contains the target qubit of the gate
             target_index = int(gate[1])
             operator_construction[target_index] = gate
         # Construct U by tensoring gates together into one matrix
         for gate in operator_construction:
             if gate == None:
-                # No gate provided, tensor I matrix
+                # No gate provided, so tensor I matrix
                 operator_U = np.kron(operator_U, self.IDENTITY)
             elif gate[0] in self.SINGLE_QUBIT_GATES:
                 operator_U = np.kron(operator_U, self.SINGLE_QUBIT_GATES[gate[0]])
