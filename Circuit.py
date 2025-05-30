@@ -1,4 +1,4 @@
-import numpy as np
+import cupy as np
 import random
 import re
 
@@ -19,12 +19,13 @@ class Circuit:
         'H': HADAMARD
     }
 
-    def __init__(self, qubits):
+    def __init__(self, qubits: int, operator_cache: bool = True):
         # Setup basis vector of qubit states
         self._qubits = qubits
         self._circuit_state = np.zeros(2 ** self._qubits)
         # Set circuit state to |0> (tensored with # of qubits)
         self._circuit_state[0] = 1
+        self._operator_cache_state = operator_cache
         self._operator_cache = {}
     
     def get_circuit_state(self):
@@ -33,7 +34,7 @@ class Circuit:
     def construct_operator(self, operator_key):
         # If operator U is already cached, skip    
         if operator_key in self._operator_cache:
-            return
+            return self._operator_cache[operator_key]
         # Start with 1 dimensional identity matrix
         operator_U = 1
         # Apply Regex to tokenize string into tuples of gates
@@ -55,9 +56,11 @@ class Circuit:
                 # Gate not recognized, so print warning and tensor I matrix
                 print("WARNING: Gate " + gate[0] + " not recognized, substituting for I")
                 operator_U = np.kron(operator_U, self.IDENTITY)
-        self._operator_cache[operator_key] = operator_U
+        # If cache is enabled, then add it to the cache
+        if self._operator_cache_state:
+            self._operator_cache[operator_key] = operator_U
+        return operator_U
 
     def apply_operator(self, key):
-        if key not in self._operator_cache:
-            self.construct_operator(key)
-        self._circuit_state = np.dot(self._operator_cache[key], self._circuit_state)
+        U = self.construct_operator(key)
+        self._circuit_state = np.dot(U, self._circuit_state)
