@@ -1,25 +1,15 @@
-import numpy as np
 import random
 import re
 
 class Circuit:
 
-    IDENTITY = np.array([[1,0],[0,1]], dtype = complex)
-    PAULI_X = np.array([[0,1],[1,0]], dtype = complex)
-    PAULI_Y = np.array([[0,-1j],[1j,0]], dtype = complex)
-    PAULI_Z = np.array([[1,0],[0,-1]], dtype = complex)
-    HADAMARD = (1 / np.sqrt(2)) * np.array([[1, 1], [1, -1]], dtype = complex)
-    
-    # Map strings to operators
-    SINGLE_QUBIT_GATES = {
-        'I': IDENTITY,
-        'X': PAULI_X,
-        'Y': PAULI_Y,
-        'Z': PAULI_Z,
-        'H': HADAMARD
-    }
-
-    def __init__(self, qubits: int, operator_cache: bool = False):
+    def __init__(self, qubits: int, operator_cache: bool = False, hardware_mode: str = 'CPU'):
+        # Choose to load cupy (numpy but for GPUs) or numpy
+        if hardware_mode == 'GPU':
+            import cupy as np
+        else:
+            import numpy as np
+        self.np = np
         # Setup basis vector of qubit states
         self._qubits = qubits
         self._circuit_state = np.zeros(2 ** self._qubits, dtype = complex)
@@ -27,11 +17,28 @@ class Circuit:
         self._circuit_state[0] = 1
         self._operator_cache_state = operator_cache
         self._operator_cache = {}
+
+        # Gates
+        self.IDENTITY = np.array([[1,0],[0,1]], dtype = complex)
+        self.PAULI_X = np.array([[0,1],[1,0]], dtype = complex)
+        self.PAULI_Y = np.array([[0,-1j],[1j,0]], dtype = complex)
+        self.PAULI_Z = np.array([[1,0],[0,-1]], dtype = complex)
+        self.HADAMARD = (1 / np.sqrt(2)) * np.array([[1, 1], [1, -1]], dtype = complex)
+        
+        # Map strings to gates
+        self.SINGLE_QUBIT_GATES = {
+            'I': self.IDENTITY,
+            'X': self.PAULI_X,
+            'Y': self.PAULI_Y,
+            'Z': self.PAULI_Z,
+            'H': self.HADAMARD
+        }
     
     def get_circuit_state(self):
         return self._circuit_state
 
     def construct_operator(self, operator_key):
+        np = self.np
         # If operator U is already cached, skip    
         if operator_key in self._operator_cache:
             return self._operator_cache[operator_key]
@@ -63,5 +70,6 @@ class Circuit:
         return operator_U
 
     def apply_operator(self, key):
+        np = self.np
         U = self.construct_operator(key)
         self._circuit_state = np.dot(U, self._circuit_state)
