@@ -35,22 +35,27 @@ class Circuit:
         if operator_key in self._operator_cache:
             return
         # Start with 1 dimensional identity matrix
-        operator_matrix = 1
+        operator_U = 1
         # Apply Regex to tokenize string into tuples of gates
         gates = re.findall(r'^([A-Za-z]+)(\d+(?:,\d+)*)$', operator_key)
+        # Initialize empty sequence of gates for constructing the operator
         operator_construction = [None] * self._qubits
+        # Fill the operator construction with gates present in the gates variable (expected to be partial)
         for gate in gates:
             target_index = int(gate[1])
             operator_construction[target_index] = gate
+        # Construct U by tensoring gates together into one matrix
         for gate in operator_construction:
             if gate == None:
-                operator_matrix = np.kron(operator_matrix, self.IDENTITY)
+                # No gate provided, tensor I matrix
+                operator_U = np.kron(operator_U, self.IDENTITY)
             elif gate[0] in self.SINGLE_QUBIT_GATES:
-                operator_matrix = np.kron(operator_matrix, self.SINGLE_QUBIT_GATES[gate[0]])
+                operator_U = np.kron(operator_U, self.SINGLE_QUBIT_GATES[gate[0]])
             else:
+                # Gate not recognized, so print warning and tensor I matrix
                 print("WARNING: Gate " + gate[0] + " not recognized, substituting for I")
-                operator_matrix = np.kron(operator_matrix, self.IDENTITY)
-        self._operator_cache[operator_key] = operator_matrix
+                operator_U = np.kron(operator_U, self.IDENTITY)
+        self._operator_cache[operator_key] = operator_U
 
     def apply_operator(self, key):
         if key not in self._operator_cache:
