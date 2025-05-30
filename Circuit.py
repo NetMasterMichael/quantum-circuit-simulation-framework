@@ -1,14 +1,14 @@
-import cupy as np
+import numpy as np
 import random
 import re
 
 class Circuit:
 
-    IDENTITY = np.array([[1,0],[0,1]])
-    PAULI_X = np.array([[0,1],[1,0]])
-    PAULI_Y = np.array([[0,-1j],[1j,0]])
-    PAULI_Z = np.array([[1,0],[0,-1]])
-    HADAMARD = (1 / np.sqrt(2)) * np.array([[1, 1], [1, -1]])
+    IDENTITY = np.array([[1,0],[0,1]], dtype = complex)
+    PAULI_X = np.array([[0,1],[1,0]], dtype = complex)
+    PAULI_Y = np.array([[0,-1j],[1j,0]], dtype = complex)
+    PAULI_Z = np.array([[1,0],[0,-1]], dtype = complex)
+    HADAMARD = (1 / np.sqrt(2)) * np.array([[1, 1], [1, -1]], dtype = complex)
     
     # Map strings to operators
     SINGLE_QUBIT_GATES = {
@@ -22,7 +22,7 @@ class Circuit:
     def __init__(self, qubits: int, operator_cache: bool = False):
         # Setup basis vector of qubit states
         self._qubits = qubits
-        self._circuit_state = np.zeros(2 ** self._qubits)
+        self._circuit_state = np.zeros(2 ** self._qubits, dtype = complex)
         # Set circuit state to |0> (tensored with # of qubits)
         self._circuit_state[0] = 1
         self._operator_cache_state = operator_cache
@@ -36,7 +36,7 @@ class Circuit:
         if operator_key in self._operator_cache:
             return self._operator_cache[operator_key]
         # Start with 1 dimensional identity matrix
-        operator_U = 1
+        operator_U = np.array([1], dtype = complex)
         # Apply Regex to tokenize string into tuples of gates
         gates = re.findall(r'^([A-Za-z]+)(\d+(?:,\d+)*)$', operator_key)
         # Initialize empty sequence of gates for constructing the operator
