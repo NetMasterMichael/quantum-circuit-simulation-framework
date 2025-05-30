@@ -34,27 +34,26 @@ class Circuit:
         # If operator U is already cached, skip    
         if operatorKey in self._operator_cache:
             return
-        # Assumption: Gates are provided in order
         # Start with 1 dimensional identity matrix
         operator_matrix = 1
-        # Apply Regex to tokenize string into array of gates
-        operators = re.findall(r'\w+', operatorKey)
-        qubit_count = 0
+        # Apply Regex to tokenize string into tuples of gates
+        operators = re.findall(r'^([A-Za-z]+)(\d+(?:,\d+)*)$', operatorKey)
+        print(operators)
+        operator_construction = [None] * self._qubits
         for operator in operators:
-            # Tokenize gate further into [0] = gate type and [1] = target qubit
-            tokenized_operator = re.findall(r'[A-Za-z]+|\d+', operator)
-            # If there is a gap between gates, pad empty space with tensored identity matrices
-            while int(tokenized_operator[1]) > qubit_count:
+            target_index = int(operator[1])
+            operator_construction[target_index] = operator
+        print(operator_construction)
+        for operator in operator_construction:
+            if operator == None:
                 operator_matrix = np.kron(operator_matrix, self.IDENTITY)
-                qubit_count += 1
-            # Tensor gate onto the operator matrix
-            operator_matrix = np.kron(operator_matrix, self.GATES[tokenized_operator[0]])
-            qubit_count += 1
-        # All gates have been tensored, pad with tensored identity matrices until 2^n x 2^n dimensions, where n = qubits
-        while qubit_count < self._qubits:
-            operator_matrix = np.kron(operator_matrix, self.IDENTITY)
-            qubit_count += 1
-        # Add new operator into the cache
+                print("No operator, tensored identity")
+            elif operator[0] in self.GATES:
+                operator_matrix = np.kron(operator_matrix, self.GATES[operator[0]])
+                print("Tensored " + operator[0])
+            else:
+                print("WARNING: Gate " + operator[0] + " not recognized, substituting for I")
+                operator_matrix = np.kron(operator_matrix, self.IDENTITY)
         self._operator_cache[operatorKey] = operator_matrix
 
     def apply_operator(self, key):
