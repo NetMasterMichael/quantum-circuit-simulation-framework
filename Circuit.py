@@ -45,7 +45,8 @@ class Circuit:
         # Start with 1 dimensional identity matrix
         operator_U = np.array([1], dtype = complex)
         # Apply Regex to tokenize string into tuples of gates
-        gates = re.findall(r'^([A-Za-z]+)(\d+(?:,\d+)*)$', operator_key)
+        gates = re.split(" ", operator_key)
+        print(gates)
         # Initialize empty sequence of gates for constructing the operator
         operator_construction = [None] * self._qubits
         # Fill the operator construction with gates present in the gates variable (expected to be partial)
@@ -54,6 +55,7 @@ class Circuit:
             target_index = int(gate[1])
             operator_construction[target_index] = gate
         # Construct U by tensoring gates together into one matrix
+        print(operator_construction)
         for gate in operator_construction:
             if gate == None:
                 # No gate provided, so tensor I matrix
