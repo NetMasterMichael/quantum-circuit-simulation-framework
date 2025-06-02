@@ -167,3 +167,48 @@ class Test_Circuit(unittest.TestCase):
             self.assertTrue(np.array_equal(testCircuit.get_circuit_state(), expectedState), 
                 msg = f"test_uniform_pauli_Z: Test failed with {i} qubits;\nExpected: {expectedState}\nActual: {testCircuit.get_circuit_state()}")
             print(f"test_uniform_pauli_Z: Test passed with {i} qubits")
+
+    def test_hadamard_start(self):
+        for i in range(1, MAX_QUBITS + 1):
+            qubits = i
+            testCircuit = Circuit.Circuit(qubits)
+            zero_state = generate_ket_0_state(qubits)
+            expectedState = zero_state
+            U = HADAMARD
+            for j in range(1, i):
+                U = np.kron(U, IDENTITY)
+            expectedState = np.dot(U, expectedState)
+            testCircuit.apply_operator("H0")
+            self.assertTrue(np.array_equal(testCircuit.get_circuit_state(), expectedState), 
+                msg = f"test_hadamard_start: Test failed with {i} qubits;\nExpected: {expectedState}\nActual: {testCircuit.get_circuit_state()}")
+            print(f"test_hadamard_start: Test passed with {i} qubits")
+    
+    def test_hadamard_end(self):
+        for i in range(2, MAX_QUBITS + 1):
+            qubits = i
+            testCircuit = Circuit.Circuit(qubits)
+            expectedState = generate_ket_0_state(qubits)
+            U = np.array([1], dtype = complex)
+            for j in range(0, i - 1):
+                U = np.kron(U, IDENTITY)
+            U = np.kron(U, HADAMARD)
+            expectedState = np.dot(U, expectedState)
+            testCircuit.apply_operator("H" + str(i - 1))
+            self.assertTrue(np.array_equal(testCircuit.get_circuit_state(), expectedState), 
+                msg = f"test_hadamard_end: Test failed with {i} qubits;\nExpected: {expectedState}\nActual: {testCircuit.get_circuit_state()}")
+            print(f"test_hadamard_end: Test passed with {i} qubits")
+
+    def test_uniform_superposition(self):
+        for i in range(1, MAX_QUBITS + 1):
+            qubits = i
+            testCircuit = Circuit.Circuit(qubits)
+            expectedState = generate_ket_0_state(qubits)
+            U = np.array([1], dtype = complex)
+            for j in range(0, i):
+                U = np.kron(HADAMARD, U)
+            expectedState = np.dot(U, expectedState)
+            U_key = generate_single_gate_circuit_DSL("H", qubits)
+            testCircuit.apply_operator(U_key)
+            self.assertTrue(np.array_equal(testCircuit.get_circuit_state(), expectedState), 
+                msg = f"test_uniform_superposition: Test failed with {i} qubits;\nExpected: {expectedState}\nActual: {testCircuit.get_circuit_state()}")
+            print(f"test_uniform_superposition: Test passed with {i} qubits")
