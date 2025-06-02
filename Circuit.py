@@ -36,18 +36,31 @@ class Circuit:
     
     def get_circuit_state(self):
         return self._circuit_state
-    
+
     def parse_operator_key(self, operator_key):
-        # Apply Regex to tokenize string into tuples of gates
-        gates = re.split(" ", operator_key)
-        # Initialize empty sequence of gates for constructing the operator
-        operator_construction = [None] * self._qubits
-        # Fill the operator construction with gates present in the gates variable (expected to be partial)
-        for gate in gates:
-            # Read the 2nd index, which contains the target qubit of the gate
-            target_index = int(gate[1])
-            operator_construction[target_index] = gate
-        return operator_construction
+        gate_cursor = 0
+        gates = []
+        tokenized_key = re.split(" ", operator_key)
+
+        for token in tokenized_key:
+            gate = token[0]
+            gate_index = int(token[1:])
+
+            # Pad before gate with identity gates
+            while (gate_cursor < gate_index):
+                gates.append(("I", gate_cursor))
+                gate_cursor += 1
+                
+            # Add gate to list
+            gates.append((gate, gate_index))
+            gate_cursor += 1
+
+        # Pad with identity gates after all gates have been added
+        while gate_cursor < self._qubits:
+            gates.append(("I", gate_cursor))
+            gate_cursor += 1
+
+        return gates
 
     def construct_operator(self, operator_key):
         np = self.np
@@ -60,10 +73,7 @@ class Circuit:
         operator_U = np.array([1], dtype = complex)
         # Construct U by tensoring gates together into one matrix
         for gate in operator_construction:
-            if gate == None:
-                # No gate provided, so tensor I matrix
-                operator_U = np.kron(operator_U, self.IDENTITY)
-            elif gate[0] in self.SINGLE_QUBIT_GATES:
+            if gate[0] in self.SINGLE_QUBIT_GATES:
                 operator_U = np.kron(operator_U, self.SINGLE_QUBIT_GATES[gate[0]])
             else:
                 # Gate not recognized, so print warning and tensor I matrix
