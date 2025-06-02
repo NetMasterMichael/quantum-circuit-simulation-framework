@@ -36,14 +36,8 @@ class Circuit:
     
     def get_circuit_state(self):
         return self._circuit_state
-
-    def construct_operator(self, operator_key):
-        np = self.np
-        # If operator U is already cached, skip    
-        if operator_key in self._operator_cache:
-            return self._operator_cache[operator_key]
-        # Start with 1 dimensional identity matrix
-        operator_U = np.array([1], dtype = complex)
+    
+    def parse_operator_key(self, operator_key):
         # Apply Regex to tokenize string into tuples of gates
         gates = re.split(" ", operator_key)
         # Initialize empty sequence of gates for constructing the operator
@@ -53,6 +47,17 @@ class Circuit:
             # Read the 2nd index, which contains the target qubit of the gate
             target_index = int(gate[1])
             operator_construction[target_index] = gate
+        return operator_construction
+
+    def construct_operator(self, operator_key):
+        np = self.np
+        # If operator U is already cached, skip    
+        if operator_key in self._operator_cache:
+            return self._operator_cache[operator_key]
+        # Parse string to array of operators
+        operator_construction = self.parse_operator_key(operator_key)
+        # Start with 1 dimensional identity matrix
+        operator_U = np.array([1], dtype = complex)
         # Construct U by tensoring gates together into one matrix
         for gate in operator_construction:
             if gate == None:
