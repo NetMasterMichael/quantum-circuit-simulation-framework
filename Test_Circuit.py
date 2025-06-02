@@ -48,6 +48,17 @@ class Test_Circuit(unittest.TestCase):
         self.assertRaises(ValueError, Circuit.Circuit, -1)
         print(f"test_invalid_qubits: Test passed")
 
+    def test_invalid_gates(self):
+        testCircuit = Circuit.Circuit(2)
+        # Test a syntactically incorrect operator
+        self.assertRaises(ValueError, testCircuit.apply_operator, "")
+        self.assertRaises(ValueError, testCircuit.apply_operator, "H")
+        self.assertRaises(ValueError, testCircuit.apply_operator, "00")
+        self.assertRaises(ValueError, testCircuit.apply_operator, "  ")
+        self.assertRaises(ValueError, testCircuit.apply_operator, "!!")
+        # Test too many gates
+        self.assertRaises(ValueError, testCircuit.apply_operator, "H0 H1 H2")
+
     def test_single_qubit_gate_start(self):
         for gate in SINGLE_QUBIT_GATES:
             for i in range(1, MAX_QUBITS + 1):

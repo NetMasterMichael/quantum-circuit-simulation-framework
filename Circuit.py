@@ -46,7 +46,12 @@ class Circuit:
         tokenized_key = re.split(" ", operator_key)
 
         for token in tokenized_key:
+            if len(token) < 2:
+                raise ValueError("Invalid gate provided")
+
             gate = token[0]
+            if gate not in self.SINGLE_QUBIT_GATES:
+                raise ValueError("Invalid gate provided")
             gate_index = int(token[1:])
 
             # Pad before gate with identity gates
@@ -57,6 +62,10 @@ class Circuit:
             # Add gate to list
             gates.append((gate, gate_index))
             gate_cursor += 1
+
+        # gate_cursor should not be larger than the number of qubits. If so, this means more gates have been added than there are qubits in the circuit
+        if gate_cursor > self._qubits:
+            raise ValueError("Operator has more gates than there are qubits in the circuit, invalid shape. Qubits in circuit is " + str(self._qubits))
 
         # Pad with identity gates after all gates have been added
         while gate_cursor < self._qubits:
