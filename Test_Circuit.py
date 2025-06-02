@@ -41,6 +41,13 @@ class Test_Circuit(unittest.TestCase):
                 msg = f"test_initialise_circuit: Test failed with {i} qubits;\nExpected: {expectedState}\nActual: {testCircuit.get_circuit_state()}")
             print(f"test_initialise_circuit: Test passed with {i} qubits")
 
+    def test_invalid_qubits(self):
+        # Test zero
+        self.assertRaises(ValueError, Circuit.Circuit, 0)
+        # Test negative
+        self.assertRaises(ValueError, Circuit.Circuit, -1)
+        print(f"test_invalid_qubits: Test passed")
+
     def test_single_qubit_gate_start(self):
         for gate in SINGLE_QUBIT_GATES:
             for i in range(1, MAX_QUBITS + 1):
