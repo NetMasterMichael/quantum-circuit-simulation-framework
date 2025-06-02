@@ -100,3 +100,13 @@ class Circuit:
         np = self.np
         U = self.construct_operator(key)
         self._circuit_state = np.dot(U, self._circuit_state)
+
+    def measure(self):
+        # Make a copy of self._circuit_state with Born's rule applied
+        probabilities = np.abs(self._circuit_state) ** 2
+        # Select a random state based on the probability of that outcome
+        outcome = np.random.choice(2 ** self._qubits, p = probabilities)
+        # Collapse circuit state to the selected state
+        collapsed_circuit_state = np.zeros(2 ** self._qubits)
+        collapsed_circuit_state[outcome] = 1 + 0j
+        self._circuit_state = collapsed_circuit_state
