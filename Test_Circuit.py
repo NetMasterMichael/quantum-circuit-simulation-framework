@@ -137,3 +137,34 @@ class Test_Circuit(unittest.TestCase):
             testCircuit.measure()
             self.assertTrue(np.array_equal(testCircuit.get_circuit_state(), expectedState))
             print(f"test_measurement: Test measurement of |{'1' * qubits}> state collapsed from complex plane passed")
+
+    def test_random_measurement(self):
+        for i in range(1, MAX_QUBITS + 1):
+            qubits = i
+            samples = (2 ** qubits) / 2
+            coverage_threshold = 0.375
+            test_passed = False
+            reruns = 5
+            while reruns != 0:
+                testCircuit = Circuit.Circuit(qubits, operator_cache = True)
+                seen_states = set()
+                for j in range(0, int(samples)):
+                    testCircuit.reset_circuit_state()
+                    testCircuit.apply_operator(generate_uniform_single_gate_circuit_DSL("H", qubits))
+                    testCircuit.measure()
+                    collapsed_state = testCircuit.get_circuit_state()
+                    for k in range(0, 2 ** qubits):
+                        if collapsed_state[k] == 1:
+                            seen_states.add(k)
+                            break
+                coverage = len(seen_states) / len(collapsed_state)
+                if coverage >= coverage_threshold:
+                    reruns = 0
+                    test_passed = True
+                else:
+                    reruns -= 1
+                    print(f"test_random_measurement: Repeating test for {i} qubits")
+            self.assertTrue(test_passed, f"test_random_measurement: Test failed, coverage threshold of {coverage_threshold} has been passed too many times")
+            print(f"test_random_measurement: Test passed with {i} qubits and {coverage}% coverage")
+
+            

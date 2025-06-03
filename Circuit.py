@@ -41,6 +41,7 @@ class Circuit:
         return self._circuit_state
 
     def reset_circuit_state(self):
+        np = self.np
         # Soft reset the circuit state to |0..0>
         self._circuit_state = np.zeros(2 ** self._qubits, dtype = complex)
         self._circuit_state[0] = 1
