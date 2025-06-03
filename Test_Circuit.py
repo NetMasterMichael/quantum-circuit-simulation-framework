@@ -167,4 +167,20 @@ class Test_Circuit(unittest.TestCase):
             self.assertTrue(test_passed, f"test_random_measurement: Test failed, coverage threshold of {coverage_threshold} has been passed too many times")
             print(f"test_random_measurement: Test passed with {i} qubits and {coverage}% coverage")
 
-            
+    def test_partial_superposition_measurement(self):
+        for i in range(2, MAX_QUBITS + 1):
+            qubits = i
+            testCircuit = Circuit.Circuit(qubits, operator_cache = True)
+            repeats = 10
+            accepted_0_state = np.zeros(2 ** qubits, dtype = complex)
+            accepted_0_state[0] = 1 + 0j
+            accepted_1_state = np.zeros(2 ** qubits, dtype = complex)
+            accepted_1_state[2 ** (qubits - 1)] = 1 + 0j
+            for j in range(0, repeats):
+                testCircuit.reset_circuit_state()
+                testCircuit.apply_operator("H0")
+                testCircuit.measure()
+                measuredState = testCircuit.get_circuit_state()
+                self.assertTrue(np.array_equal(accepted_0_state, measuredState) | np.array_equal(accepted_1_state, measuredState))
+            print(f"test_partial_superposition_measurement: Test passed with {i} qubits")
+        
