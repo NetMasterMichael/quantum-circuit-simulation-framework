@@ -40,6 +40,11 @@ class Circuit:
     def get_circuit_state(self):
         return self._circuit_state
 
+    def reset_circuit_state(self):
+        # Soft reset the circuit state to |0..0>
+        self._circuit_state = np.zeros(2 ** self._qubits, dtype = complex)
+        self._circuit_state[0] = 1
+
     def parse_operator_key(self, operator_key):
         gate_cursor = 0
         gates = []
