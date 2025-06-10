@@ -71,7 +71,7 @@ class Circuit:
         # Construct U by tensoring gates together into one matrix
         for gate in operator_construction:
             operator_U = np.kron(operator_U, gate)
-            
+
         # If cache is enabled, then add it to the cache
         if self._operator_cache_state:
             self._operator_cache[operator_key] = operator_U
@@ -93,6 +93,10 @@ class Circuit:
             gate = token[0]
             if gate not in self.SINGLE_QUBIT_GATES:
                 raise ValueError(f"Invalid gate provided: Received {token}, {gate} cannot be resolved to a valid gate")
+
+            gate_index = int(token[1:])
+            if gate_index > self._qubits:
+                raise ValueError(f"Invalid gate provided: Received {token}, applies to wire {str(gate_index)} but there are only {str(self._qubits)} qubits")
 
         ## Ordering
         # Tokenize into tuples
