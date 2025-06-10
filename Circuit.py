@@ -80,13 +80,17 @@ class Circuit:
 
         return gates
 
+    def apply_key_preprocessing(self, operator_key):
+        return operator_key
+
     def construct_operator(self, operator_key):
         np = self.np
-        # If operator U is already cached, skip    
-        if operator_key in self._operator_cache:
-            return self._operator_cache[operator_key]
+        # If operator U is already cached, skip
+        processed_operator_key = self.apply_key_preprocessing(operator_key)
+        if processed_operator_key in self._operator_cache:
+            return self._operator_cache[processed_operator_key]
         # Parse string to array of operators
-        operator_construction = self.parse_operator_key(operator_key)
+        operator_construction = self.parse_operator_key(processed_operator_key)
         # Start with 1 dimensional identity matrix
         operator_U = np.array([1], dtype = complex)
         # Construct U by tensoring gates together into one matrix
