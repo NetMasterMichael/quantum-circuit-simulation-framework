@@ -64,16 +64,14 @@ class Circuit:
         # If operator U is already cached, skip
         # Parse string to array of operators
         operator_construction = self.parse_key_to_matrices(operator_key)
+
         # Start with 1 dimensional identity matrix
         operator_U = np.array([1], dtype = complex)
+
         # Construct U by tensoring gates together into one matrix
         for gate in operator_construction:
-            if gate[0] in self.SINGLE_QUBIT_GATES:
-                operator_U = np.kron(operator_U, self.SINGLE_QUBIT_GATES[gate[0]])
-            else:
-                # Gate not recognized, so print warning and tensor I matrix
-                print("WARNING: Gate " + gate[0] + " not recognized, substituting for I")
-                operator_U = np.kron(operator_U, self.IDENTITY)
+            operator_U = np.kron(operator_U, gate)
+            
         # If cache is enabled, then add it to the cache
         if self._operator_cache_state:
             self._operator_cache[operator_key] = operator_U
@@ -146,7 +144,7 @@ class Circuit:
         tokenized_key = re.split(" ", operator_key)
 
         for token in tokenized_key:
-            gates.append((token[0], int(token[1:])))
+            gates.append(self.SINGLE_QUBIT_GATES[token[0]])
 
         return gates
 
