@@ -55,15 +55,15 @@ class Circuit:
         if preprocessed_key in self._operator_cache:
             U = self._operator_cache[preprocessed_key]
         else:
-            U = self.construct_operator(preprocessed_key)
+            U = self.compile_operator(preprocessed_key)
         self._circuit_state = np.dot(U, self._circuit_state)
 
 
-    def construct_operator(self, operator_key):
+    def compile_operator(self, operator_key):
         np = self.np
         # If operator U is already cached, skip
         # Parse string to array of operators
-        operator_construction = self.parse_operator_key(operator_key)
+        operator_construction = self.parse_key_to_matrices(operator_key)
         # Start with 1 dimensional identity matrix
         operator_U = np.array([1], dtype = complex)
         # Construct U by tensoring gates together into one matrix
@@ -141,7 +141,7 @@ class Circuit:
         return output_key
 
 
-    def parse_operator_key(self, operator_key):
+    def parse_key_to_matrices(self, operator_key):
         gates = []
         tokenized_key = re.split(" ", operator_key)
 
