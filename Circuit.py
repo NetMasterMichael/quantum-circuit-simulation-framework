@@ -56,7 +56,7 @@ class Circuit:
         if preprocessed_key in self._operator_cache:
             U = self._operator_cache[preprocessed_key]
         else:
-            U = self.construct_operator(key)
+            U = self.construct_operator(preprocessed_key)
         self._circuit_state = np.dot(U, self._circuit_state)
 
 
@@ -138,43 +138,18 @@ class Circuit:
         output_key = gates[0][0] + str(gates[0][1])
         for i in range(1, len(gates)):
             output_key += " " + gates[i][0] + str(gates[i][1])
-    
+
         return output_key
 
 
     def parse_operator_key(self, operator_key):
-        gate_cursor = 0
         gates = []
         tokenized_key = re.split(" ", operator_key)
 
         for token in tokenized_key:
-            if len(token) < 2:
-                raise ValueError(f"Invalid gate provided: Received {token}, expected a gate of length at least 2")
+            gates.append((token[0], int(token[1:])))
 
-            gate = token[0]
-            if gate not in self.SINGLE_QUBIT_GATES:
-                raise ValueError(f"Invalid gate provided: Received {token}, {gate} cannot be resolved to a valid gate")
-            gate_index = int(token[1:])
-
-            # Pad before gate with identity gates
-            while (gate_cursor < gate_index):
-                gates.append(("I", gate_cursor))
-                gate_cursor += 1
-                
-            # Add gate to list
-            gates.append((gate, gate_index))
-            gate_cursor += 1
-
-        # gate_cursor should not be larger than the number of qubits. If so, this means more gates have been added than there are qubits in the circuit
-        if gate_cursor > self._qubits:
-            raise ValueError("Operator has more gates than there are qubits in the circuit, invalid shape. Qubits in circuit is " + str(self._qubits))
-
-        # Pad with identity gates after all gates have been added
-        while gate_cursor < self._qubits:
-            gates.append(("I", gate_cursor))
-            gate_cursor += 1
-
-        return gates    
+        return gates
 
 
     def measure(self):
