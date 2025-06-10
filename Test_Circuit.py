@@ -3,6 +3,7 @@ import numpy as np
 from Circuit import Circuit
 
 # For repeating tests, set the max qubits that the tests will repeat up until
+# A higher MAX_QUBITS value means more rigorous testing, but an increase in 1 results in double the memory usage and 8x testing time
 MAX_QUBITS = 12
 
 IDENTITY = np.array([[1,0],[0,1]], dtype = complex)
@@ -35,6 +36,12 @@ def generate_uniform_single_gate_circuit_DSL(gate: str, qubits: int):
         dsl += " " + gate + str(i)
     return dsl
 
+def check_if_operator_is_cached(circuit: Circuit, operator_key: str):
+    if operator_key in circuit._operator_cache:
+        return True
+    else:
+        return False
+
 class Test_Circuit(unittest.TestCase):
 
     def test_initialise_circuit(self):
@@ -64,6 +71,40 @@ class Test_Circuit(unittest.TestCase):
         # Test too many gates
         self.assertRaises(ValueError, testCircuit.apply_operator, "H0 H1 H2")
         print(f"test_invalid_gates: Test passed")
+
+    def test_equivalent_cached_operators(self):
+        testCircuit = Circuit(4, operator_cache = True)
+        # Test ordering
+        self.assertFalse(check_if_operator_is_cached(testCircuit, "H0 H1 H2 H3"),
+            msg = f"test_equivalent_cached_operators: Test failed at the ordering subtest, assertFalse received True")
+        testCircuit.apply_operator("H3 H1 H2 H0")
+        self.assertTrue(check_if_operator_is_cached(testCircuit, "H0 H1 H2 H3"),
+            msg = f"test_equivalent_cached_operators: Test failed at the ordering subtest, assertTrue received False")
+        # Test front padding
+        self.assertFalse(check_if_operator_is_cached(testCircuit, "I0 H1 H2 H3"),
+            msg = f"test_equivalent_cached_operators: Test failed at the front padding subtest, assertFalse received True")
+        testCircuit.apply_operator("H1 H2 H3")
+        self.assertTrue(check_if_operator_is_cached(testCircuit, "I0 H1 H2 H3"),
+            msg = f"test_equivalent_cached_operators: Test failed at the front padding subtest, assertTrue received False")
+        # Test end padding
+        self.assertFalse(check_if_operator_is_cached(testCircuit, "H0 I1 I2 I3"),
+            msg = f"test_equivalent_cached_operators: Test failed at the end padding subtest, assertFalse received True")
+        testCircuit.apply_operator("H0")
+        self.assertTrue(check_if_operator_is_cached(testCircuit, "H0 I1 I2 I3"),
+            msg = f"test_equivalent_cached_operators: Test failed at the end padding subtest, assertTrue received False")
+        # Test front padding and end padding
+        self.assertFalse(check_if_operator_is_cached(testCircuit, "I0 H1 I2 I3"),
+            msg = f"test_equivalent_cached_operators: Test failed at the front padding and end padding subtest, assertFalse received True")
+        testCircuit.apply_operator("H1")
+        self.assertTrue(check_if_operator_is_cached(testCircuit, "I0 H1 I2 I3"),
+            msg = f"test_equivalent_cached_operators: Test failed at the front padding and end padding subtest, assertTrue received False")
+        # Test front padding, end padding, and ordering
+        self.assertFalse(check_if_operator_is_cached(testCircuit, "I0 H1 H2 I3"),
+            msg = f"test_equivalent_cached_operators: Test failed at the ordering, front padding and end padding subtest, assertFalse received True")
+        testCircuit.apply_operator("H2 H1")
+        self.assertTrue(check_if_operator_is_cached(testCircuit, "I0 H1 H2 I3"),
+            msg = f"test_equivalent_cached_operators: Test failed at the ordering, front padding and end padding subtest, assertTrue received False")
+        print(f"test_equivalent_cached_operators: Test passed")
 
     def test_single_qubit_gate_start(self):
         for gate in SINGLE_QUBIT_GATES:
@@ -138,7 +179,7 @@ class Test_Circuit(unittest.TestCase):
             self.assertTrue(np.array_equal(testCircuit.get_circuit_state(), expectedState))
             print(f"test_measurement: Test measurement of |{'1' * qubits}> state collapsed from complex plane passed")
 
-    def test_random_measurement(self):
+    def test_random_measurement_sampling(self):
         for i in range(1, MAX_QUBITS + 1):
             qubits = i
             samples = (2 ** qubits) / 2
@@ -163,9 +204,9 @@ class Test_Circuit(unittest.TestCase):
                     test_passed = True
                 else:
                     reruns -= 1
-                    print(f"test_random_measurement: Repeating test for {i} qubits")
-            self.assertTrue(test_passed, f"test_random_measurement: Test failed, coverage threshold of {coverage_threshold} has been passed too many times")
-            print(f"test_random_measurement: Test passed with {i} qubits and {coverage}% coverage")
+                    print(f"test_random_measurement_sampling: Repeating test for {i} qubits")
+            self.assertTrue(test_passed, f"test_random_measurement_sampling: Test failed, coverage threshold of {coverage_threshold} has been passed too many times")
+            print(f"test_random_measurement_sampling: Test passed with {i} qubits and {coverage}% coverage")
 
     def test_partial_superposition_measurement(self):
         for i in range(2, MAX_QUBITS + 1):

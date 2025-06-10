@@ -3,7 +3,6 @@ import re
 
 class Circuit:
 
-
     def __init__(self, qubits: int, operator_cache: bool = False, hardware_mode: str = 'CPU'):
         if qubits < 1:
             raise ValueError("Qubits parameter must be at least 1, got " + str(qubits))
