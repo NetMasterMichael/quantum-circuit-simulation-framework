@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from Circuit import Circuit
+from quantum_circuit import Circuit
 
 # For repeating tests, set the max qubits that the tests will repeat up until
 # A higher MAX_QUBITS value means more rigorous testing, but an increase in 1 results in double the memory usage and 8x testing time
@@ -42,7 +42,7 @@ def check_if_operator_is_cached(circuit: Circuit, operator_key: str):
     else:
         return False
 
-class Test_Circuit(unittest.TestCase):
+class TestQuantumCircuit(unittest.TestCase):
 
     def test_initialise_circuit(self):
         for i in range(1, MAX_QUBITS + 1):
