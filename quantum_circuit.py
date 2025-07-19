@@ -200,14 +200,12 @@ class Circuit:
 
         ## Tensor matrices together to compile an operator
         target_gate_index = len(gate_structure) - 1
-        print(gate_structure[target_gate_index])
         U = self.SINGLE_QUBIT_GATES[gate_structure[target_gate_index][0]]
         # Steps are different depending on the order of the control and target indices
         for i in range(target_gate_index - 1, -1, -1):
             # Control wire is before target wire
             if gate_structure[i][1] < gate_structure[target_gate_index][1]:
                 index_difference = gate_structure[target_gate_index][1] - gate_structure[i][1]
-                print(f"{gate_structure[i][1]} is less than {gate_structure[target_gate_index][1]} with a difference of {index_difference}")
                 U_0 = np.kron(np.kron(self.KETBRA_00, np.eye(2 ** index_difference)), np.eye(U.shape[0]))
                 U_1 = np.kron(np.kron(self.KETBRA_11, np.eye(2 ** index_difference)), U)
                 U = U_0 + U_1
@@ -218,8 +216,6 @@ class Circuit:
                 U_1 = np.kron(np.kron(U, np.eye(2 ** index_difference)), self.KETBRA_11)
                 U = U_0 + U_1
 
-        # For debugging, just return this for now instead of a matrix
-        print(U)
         return U
 
 
