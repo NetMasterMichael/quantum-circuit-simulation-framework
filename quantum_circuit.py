@@ -170,14 +170,14 @@ class Circuit:
             if char == 'C':
                 control_wires += 1
 
-        # Break down token into array of [letter, index] pairs
+        ## Decompose token into array of [letter, index] pairs
         # Side note: Far from the most beautiful solution, but functional for a prototype. To refactor into something less cursed later
         gate_structure = []
         tail_cursor = len(token) - 1
         for i in range(control_wires + 1):
             gate_structure.append([token[i], 0])
             
-            # Compute the index by passing each digit backwards
+            # Compute the index by passing each digit backwards until we reach a comma or a gate
             digit = 0
             while token[tail_cursor] != ',':
                 if i == tail_cursor:
@@ -187,8 +187,19 @@ class Circuit:
                 tail_cursor -= 1
             tail_cursor -= 1
 
-        print(gate_structure)
+        ## Normalize indices so that the lowest index is 0
+        # Find the lowest index
+        lowest_index = 0
+        for i in range(1, len(gate_structure)):
+            if gate_structure[i][1] < gate_structure[lowest_index][1]:
+                lowest_index = i
+        # Subtract the lowest index from all indexes
+        sub_val = gate_structure[lowest_index][1]
+        for i in range(0, len(gate_structure)):
+            gate_structure[i][1] = gate_structure[i][1] - sub_val
+
         # For debugging, just return this for now instead of a matrix
+        print(gate_structure)
         return gate_structure
 
 
