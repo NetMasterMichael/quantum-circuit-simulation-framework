@@ -28,8 +28,8 @@ class Circuit:
         self.PAULI_Z = np.array([[1,0],[0,-1]], dtype = complex)
         self.HADAMARD = (1 / np.sqrt(2)) * np.array([[1, 1], [1, -1]], dtype = complex)
 
-        self.KET_0 = np.array([1,0], dtype = complex)     # |0>
-        self.KET_1 = np.array([0,1], dtype = complex)     # |1>
+        self.KET_0 = np.array([1,0], dtype = complex)             # |0>
+        self.KET_1 = np.array([0,1], dtype = complex)             # |1>
         self.KETBRA_00 = np.outer(self.KET_0, self.KET_0.conj())  # |0><0|
         self.KETBRA_11 = np.outer(self.KET_1, self.KET_1.conj())  # |1><1|
                 
@@ -208,13 +208,13 @@ class Circuit:
             if gate_structure[i][1] < gate_structure[target_gate_index][1]:
                 index_difference = gate_structure[target_gate_index][1] - gate_structure[i][1]
                 print(f"{gate_structure[i][1]} is less than {gate_structure[target_gate_index][1]} with a difference of {index_difference}")
-                U_0 = np.kron(np.kron(self.KETBRA_00, np.eye(2 ** index_difference)), self.IDENTITY)
+                U_0 = np.kron(np.kron(self.KETBRA_00, np.eye(2 ** index_difference)), np.eye(U.shape[0]))
                 U_1 = np.kron(np.kron(self.KETBRA_11, np.eye(2 ** index_difference)), U)
                 U = U_0 + U_1
             # Target wire is before control wire
             else:
                 index_difference = gate_structure[i][1] - gate_structure[target_gate_index][1]
-                U_0 = np.kron(np.kron(self.IDENTITY, np.eye(2 ** index_difference)), self.KETBRA_00)
+                U_0 = np.kron(np.kron(np.eye(U.shape[0]), np.eye(2 ** index_difference)), self.KETBRA_00)
                 U_1 = np.kron(np.kron(U, np.eye(2 ** index_difference)), self.KETBRA_11)
                 U = U_0 + U_1
 
