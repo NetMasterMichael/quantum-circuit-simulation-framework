@@ -13,6 +13,13 @@ class Circuit:
         else:
             import numpy as np
         self.np = np
+        np.set_printoptions(
+            threshold = np.inf,
+            linewidth = np.inf,
+            precision = 15,
+            suppress = True
+        )
+
         # Setup basis vector of qubit states
         self._qubits = qubits
         self._circuit_state = np.zeros(2 ** self._qubits, dtype = complex)
@@ -198,23 +205,43 @@ class Circuit:
         for i in range(0, len(gate_structure)):
             gate_structure[i][1] = gate_structure[i][1] - sub_val
 
-        ## Tensor matrices together to compile an operator
-        target_gate_index = len(gate_structure) - 1
+        ## Order operations with insertion sort
+        for i in range(1, len(gate_structure)):
+            key_item = gate_structure[i]
+            key_value = key_item[1]
+            j = i - 1
+            while j >= 0 and gate_structure[j][1] > key_value:
+                gate_structure[j + 1] = gate_structure[j]
+                j -= 1
+            gate_structure[j + 1] = key_item
+
+        # Currently there's assumed to only be one gate in this operator, to add validation later
+
+        ## Find target gate in gate_structure
+        i = 0
+        while gate_structure[i][0] == 'C':
+            i += 1
+        target_gate_index = i
         U = self.SINGLE_QUBIT_GATES[gate_structure[target_gate_index][0]]
-        # Steps are different depending on the order of the control and target indices
+
+        ## Tensor matrices together to compile an operator
+        # Compile control wires on the left side of the target wire
+        operation_cursor = target_gate_index
         for i in range(target_gate_index - 1, -1, -1):
-            # Control wire is before target wire
-            if gate_structure[i][1] < gate_structure[target_gate_index][1]:
-                index_difference = gate_structure[target_gate_index][1] - gate_structure[i][1]
-                U_0 = np.kron(np.kron(self.KETBRA_00, np.eye(2 ** index_difference)), np.eye(U.shape[0]))
-                U_1 = np.kron(np.kron(self.KETBRA_11, np.eye(2 ** index_difference)), U)
-                U = U_0 + U_1
-            # Target wire is before control wire
-            else:
-                index_difference = gate_structure[i][1] - gate_structure[target_gate_index][1]
-                U_0 = np.kron(np.kron(np.eye(U.shape[0]), np.eye(2 ** index_difference)), self.KETBRA_00)
-                U_1 = np.kron(np.kron(U, np.eye(2 ** index_difference)), self.KETBRA_11)
-                U = U_0 + U_1
+            index_difference = gate_structure[operation_cursor][1] - gate_structure[i][1]
+            U_0 = np.kron(np.kron(self.KETBRA_00, np.eye(2 ** (index_difference - 1))), np.eye(U.shape[0]))
+            U_1 = np.kron(np.kron(self.KETBRA_11, np.eye(2 ** (index_difference - 1))), U)
+            U = U_0 + U_1
+            operation_cursor -= 1
+
+        # Compile control wires on the right side of the target wire
+        operation_cursor = target_gate_index
+        for i in range(target_gate_index + 1, len(gate_structure)):
+            index_difference = gate_structure[i][1] - gate_structure[operation_cursor][1]
+            U_0 = np.kron(np.kron(np.eye(U.shape[0]), np.eye(2 ** (index_difference - 1))), self.KETBRA_00)
+            U_1 = np.kron(np.kron(U, np.eye(2 ** (index_difference - 1))), self.KETBRA_11)
+            U = U_0 + U_1
+            operation_cursor += 1
 
         return U
 
