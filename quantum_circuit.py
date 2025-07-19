@@ -49,6 +49,10 @@ class Circuit:
             'H': self.HADAMARD
         }
 
+        self.ALIASES = {
+            'NOT' : 'X'
+        }
+
     
     def get_circuit_state(self):
         return self._circuit_state
@@ -72,6 +76,8 @@ class Circuit:
 
 
     def apply_key_preprocessing(self, operator_key):
+
+        operator_key = self.translate_aliases(operator_key)
 
         self.check_legal_syntax(operator_key)
 
@@ -126,6 +132,15 @@ class Circuit:
         return output_key
     
 
+    def translate_aliases(self, operator_key):
+
+        new_ok = operator_key
+        for alias, resolution in self.ALIASES.items():
+            new_ok.replace(alias, resolution)
+
+        return new_ok
+
+
     def check_legal_syntax(self, operator_key):
 
         stripped_key = operator_key.strip(" ")
@@ -141,7 +156,7 @@ class Circuit:
             operator_cursor = 0
             while token[operator_cursor] == 'C':
                 operator_cursor += 1
-            # Check gate
+            # Then check gate
             gate = token[operator_cursor]
             if gate not in self.SINGLE_QUBIT_GATES:
                 raise ValueError(f"Invalid gate provided: Received {token}, {gate} cannot be resolved to a valid gate")
