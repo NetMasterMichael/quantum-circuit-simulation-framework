@@ -153,9 +153,17 @@ class Circuit:
         tokenized_key = re.split(" ", operator_key)
 
         for token in tokenized_key:
-            gates.append(self.SINGLE_QUBIT_GATES[token[0]])
+            if token[0] == 'C':
+                gates.append(self.compile_controlled_gate(token))
+            else:
+                gates.append(self.SINGLE_QUBIT_GATES[token[0]])
 
         return gates
+    
+
+    def compile_controlled_gate(self, operator):
+        
+        return
 
 
     def measure(self):
