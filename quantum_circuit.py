@@ -16,7 +16,7 @@ class Circuit:
         # Setup basis vector of qubit states
         self._qubits = qubits
         self._circuit_state = np.zeros(2 ** self._qubits, dtype = complex)
-        # Set circuit state to |0> (tensored with # of qubits)
+        # Set circuit state to |00...0>
         self._circuit_state[0] = 1
         self._operator_cache_state = operator_cache
         self._operator_cache = {}
@@ -44,7 +44,7 @@ class Circuit:
 
     def reset_circuit_state(self):
         np = self.np
-        # Soft reset the circuit state to |0..0>
+        # Soft reset the circuit state to |00...0>
         self._circuit_state = np.zeros(2 ** self._qubits, dtype = complex)
         self._circuit_state[0] = 1
 
@@ -57,25 +57,6 @@ class Circuit:
         else:
             U = self.compile_operator(preprocessed_key)
         self._circuit_state = np.dot(U, self._circuit_state)
-
-
-    def compile_operator(self, operator_key):
-        np = self.np
-        # If operator U is already cached, skip
-        # Parse string to array of operators
-        operator_construction = self.parse_key_to_matrices(operator_key)
-
-        # Start with 1 dimensional identity matrix
-        operator_U = np.array([1], dtype = complex)
-
-        # Construct U by tensoring gates together into one matrix
-        for gate in operator_construction:
-            operator_U = np.kron(operator_U, gate)
-
-        # If cache is enabled, then add it to the cache
-        if self._operator_cache_state:
-            self._operator_cache[operator_key] = operator_U
-        return operator_U
 
 
     def apply_key_preprocessing(self, operator_key):
@@ -141,6 +122,25 @@ class Circuit:
             output_key += " " + gates[i][0] + str(gates[i][1])
 
         return output_key
+
+
+    def compile_operator(self, operator_key):
+        np = self.np
+        # If operator U is already cached, skip
+        # Parse string to array of operators
+        operator_construction = self.parse_key_to_matrices(operator_key)
+
+        # Start with 1x1 dimensional identity vector
+        operator_U = np.array([1], dtype = complex)
+
+        # Construct U by tensoring gates together into one matrix
+        for gate in operator_construction:
+            operator_U = np.kron(operator_U, gate)
+
+        # If cache is enabled, then add it to the cache
+        if self._operator_cache_state:
+            self._operator_cache[operator_key] = operator_U
+        return operator_U
 
 
     def parse_key_to_matrices(self, operator_key):
