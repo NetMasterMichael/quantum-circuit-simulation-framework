@@ -161,8 +161,35 @@ class Circuit:
         return gates
     
 
-    def compile_controlled_gate(self, operator):
-        return
+    def compile_controlled_gate(self, token):
+        np = self.np
+
+        # Count number of control wires
+        control_wires = 0
+        for char in token:
+            if char == 'C':
+                control_wires += 1
+
+        # Break down token into array of [letter, index] pairs
+        # Side note: Far from the most beautiful solution, but functional for a prototype. To refactor into something less cursed later
+        gate_structure = []
+        tail_cursor = len(token) - 1
+        for i in range(control_wires + 1):
+            gate_structure.append([token[i], 0])
+            
+            # Compute the index by passing each digit backwards
+            digit = 0
+            while token[tail_cursor] != ',':
+                if i == tail_cursor:
+                    break
+                gate_structure[i][1] += int(token[tail_cursor]) * (10 ** digit)
+                digit += 1
+                tail_cursor -= 1
+            tail_cursor -= 1
+
+        print(gate_structure)
+        # For debugging, just return this for now instead of a matrix
+        return gate_structure
 
 
     def measure(self):
