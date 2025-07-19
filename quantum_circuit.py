@@ -72,24 +72,14 @@ class Circuit:
 
 
     def apply_key_preprocessing(self, operator_key):
+
+        self.check_legal_syntax(operator_key)
+
         ## Tokenization
         # Remove spaces at start and end
         stripped_key = operator_key.strip(" ")
         # Split operator into tokens
         tokenized_key = re.split(" ", stripped_key)
-
-        ## Validation
-        for token in tokenized_key:
-            if len(token) < 2:
-                raise ValueError(f"Invalid gate provided: Received {token}, expected a gate of length at least 2")
-
-            gate = token[0]
-            if gate not in self.SINGLE_QUBIT_GATES:
-                raise ValueError(f"Invalid gate provided: Received {token}, {gate} cannot be resolved to a valid gate")
-
-            gate_index = int(token[1:])
-            if gate_index > self._qubits:
-                raise ValueError(f"Invalid gate provided: Received {token}, applies to wire {str(gate_index)} but there are only {str(self._qubits)} qubits")
 
         ## Ordering
         # Tokenize into tuples
@@ -134,6 +124,34 @@ class Circuit:
             output_key += " " + gates[i][0] + str(gates[i][1])
 
         return output_key
+    
+
+    def check_legal_syntax(self, operator_key):
+
+        stripped_key = operator_key.strip(" ")
+        tokenized_key = re.split(" ", stripped_key)
+
+        for token in tokenized_key:
+            # Length check
+            if len(token) < 2:
+                raise ValueError(f"Invalid gate provided: Received {token}, expected a gate of length at least 2")
+
+            # Gate validity check
+            # Advance past any set control wires
+            operator_cursor = 0
+            while token[operator_cursor] == 'C':
+                operator_cursor += 1
+            # Check gate
+            gate = token[operator_cursor]
+            if gate not in self.SINGLE_QUBIT_GATES:
+                raise ValueError(f"Invalid gate provided: Received {token}, {gate} cannot be resolved to a valid gate")
+
+            # Index check
+            gate_indices = token[:operator_cursor]
+            gate_indices.split(",")
+            for gate_index in gate_indices:
+                if int(gate_index) > self._qubits:
+                    raise ValueError(f"Invalid gate provided: Received {token}, applies to wire {gate_index} but there are only {str(self._qubits)} qubits")
 
 
     def compile_operator(self, operator_key):
