@@ -56,11 +56,11 @@ class Circuit:
 
     def apply_operator(self, key):
         np = self.np
-        preprocessed_key = self.apply_key_preprocessing(key)
-        if preprocessed_key in self._operator_cache:
-            U = self._operator_cache[preprocessed_key]
+        normalized_key = self.apply_key_preprocessing(key)
+        if normalized_key in self._operator_cache:
+            U = self._operator_cache[normalized_key]
         else:
-            U = self.compile_operator(preprocessed_key)
+            U = self.compile_operator(normalized_key)
         self._circuit_state = np.dot(U, self._circuit_state)
 
 
@@ -162,7 +162,6 @@ class Circuit:
     
 
     def compile_controlled_gate(self, operator):
-        
         return
 
 
