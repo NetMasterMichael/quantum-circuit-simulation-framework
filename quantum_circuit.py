@@ -67,15 +67,15 @@ class Circuit:
 
     def apply_operator(self, key):
         np = self.np
-        normalized_key = self.apply_key_preprocessing(key)
-        if normalized_key in self._operator_cache:
-            U = self._operator_cache[normalized_key]
+        normalised_key = self.normalise_key(key)
+        if normalised_key in self._operator_cache:
+            U = self._operator_cache[normalised_key]
         else:
-            U = self.compile_operator(normalized_key)
+            U = self.compile_operator(normalised_key)
         self._circuit_state = np.dot(U, self._circuit_state)
 
 
-    def apply_key_preprocessing(self, operator_key):
+    def normalise_key(self, operator_key):
 
         operator_key = self.translate_aliases(operator_key)
 
