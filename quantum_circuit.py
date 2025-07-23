@@ -227,17 +227,6 @@ class Circuit:
                 tail_cursor -= 1
             tail_cursor -= 1
 
-        ## Normalize indices so that the lowest index is 0
-        # Find the lowest index
-        lowest_index = 0
-        for i in range(1, len(gate_structure)):
-            if gate_structure[i][1] < gate_structure[lowest_index][1]:
-                lowest_index = i
-        # Subtract the lowest index from all indexes
-        sub_val = gate_structure[lowest_index][1]
-        for i in range(0, len(gate_structure)):
-            gate_structure[i][1] = gate_structure[i][1] - sub_val
-
         ## Order operations with insertion sort
         for i in range(1, len(gate_structure)):
             key_item = gate_structure[i]
