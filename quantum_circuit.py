@@ -278,3 +278,7 @@ class Circuit:
 
     def DEBUG_get_circuit_state(self):
         return self._circuit_state
+    
+
+    def DEBUG_is_operator_cached(self, operator_key):
+        return operator_key in self._operator_cache

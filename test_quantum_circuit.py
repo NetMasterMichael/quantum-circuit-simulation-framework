@@ -36,11 +36,6 @@ def generate_uniform_single_gate_circuit_DSL(gate: str, qubits: int):
         dsl += " " + gate + str(i)
     return dsl
 
-def check_if_operator_is_cached(circuit: Circuit, operator_key: str):
-    if operator_key in circuit._operator_cache:
-        return True
-    else:
-        return False
 
 class TestQuantumCircuit(unittest.TestCase):
 
@@ -77,38 +72,38 @@ class TestQuantumCircuit(unittest.TestCase):
     def test_equivalent_cached_operators(self):
         testCircuit = Circuit(4, operator_cache = True)
         # Test ordering
-        self.assertFalse(check_if_operator_is_cached(testCircuit, "H0 H1 H2 H3"),
+        self.assertFalse(testCircuit.DEBUG_is_operator_cached("H0 H1 H2 H3"),
             msg = f"test_equivalent_cached_operators: Test failed at the ordering subtest, assertFalse received True")
         testCircuit.apply_operator("H3 H1 H2 H0")
-        self.assertTrue(check_if_operator_is_cached(testCircuit, "H0 H1 H2 H3"),
+        self.assertTrue(testCircuit.DEBUG_is_operator_cached("H0 H1 H2 H3"),
             msg = f"test_equivalent_cached_operators: Test failed at the ordering subtest, assertTrue received False")
 
         # Test front padding
-        self.assertFalse(check_if_operator_is_cached(testCircuit, "I0 H1 H2 H3"),
+        self.assertFalse(testCircuit.DEBUG_is_operator_cached("I0 H1 H2 H3"),
             msg = f"test_equivalent_cached_operators: Test failed at the front padding subtest, assertFalse received True")
         testCircuit.apply_operator("H1 H2 H3")
-        self.assertTrue(check_if_operator_is_cached(testCircuit, "I0 H1 H2 H3"),
+        self.assertTrue(testCircuit.DEBUG_is_operator_cached("I0 H1 H2 H3"),
             msg = f"test_equivalent_cached_operators: Test failed at the front padding subtest, assertTrue received False")
 
         # Test end padding
-        self.assertFalse(check_if_operator_is_cached(testCircuit, "H0 I1 I2 I3"),
+        self.assertFalse(testCircuit.DEBUG_is_operator_cached("H0 I1 I2 I3"),
             msg = f"test_equivalent_cached_operators: Test failed at the end padding subtest, assertFalse received True")
         testCircuit.apply_operator("H0")
-        self.assertTrue(check_if_operator_is_cached(testCircuit, "H0 I1 I2 I3"),
+        self.assertTrue(testCircuit.DEBUG_is_operator_cached("H0 I1 I2 I3"),
             msg = f"test_equivalent_cached_operators: Test failed at the end padding subtest, assertTrue received False")
 
         # Test front padding and end padding
-        self.assertFalse(check_if_operator_is_cached(testCircuit, "I0 H1 I2 I3"),
+        self.assertFalse(testCircuit.DEBUG_is_operator_cached("I0 H1 I2 I3"),
             msg = f"test_equivalent_cached_operators: Test failed at the front padding and end padding subtest, assertFalse received True")
         testCircuit.apply_operator("H1")
-        self.assertTrue(check_if_operator_is_cached(testCircuit, "I0 H1 I2 I3"),
+        self.assertTrue(testCircuit.DEBUG_is_operator_cached("I0 H1 I2 I3"),
             msg = f"test_equivalent_cached_operators: Test failed at the front padding and end padding subtest, assertTrue received False")
 
         # Test front padding, end padding, and ordering
-        self.assertFalse(check_if_operator_is_cached(testCircuit, "I0 H1 H2 I3"),
+        self.assertFalse(testCircuit.DEBUG_is_operator_cached("I0 H1 H2 I3"),
             msg = f"test_equivalent_cached_operators: Test failed at the ordering, front padding and end padding subtest, assertFalse received True")
         testCircuit.apply_operator("H2 H1")
-        self.assertTrue(check_if_operator_is_cached(testCircuit, "I0 H1 H2 I3"),
+        self.assertTrue(testCircuit.DEBUG_is_operator_cached("I0 H1 H2 I3"),
             msg = f"test_equivalent_cached_operators: Test failed at the ordering, front padding and end padding subtest, assertTrue received False")
 
         print(f"test_equivalent_cached_operators: Test passed")
