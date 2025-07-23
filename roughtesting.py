@@ -27,7 +27,7 @@ def save_compiled_controlled_gate(n):
     with open(filename, 'w') as f:
         f.write(str(result))
     
-
+"""
 save_compiled_controlled_gate("CX1,0")
 save_compiled_controlled_gate("CX0,1")
 #save_compiled_controlled_gate("CX1,10")
@@ -38,7 +38,7 @@ save_compiled_controlled_gate("CCX0,1,2")
 save_compiled_controlled_gate("CCX1,2,0")
 
 save_compiled_controlled_gate("CCCH5,1,2,6")
-
+"""
 
 """
 CCX = np.array([[1.+0.j,0.+0.j,0.+0.j,0.+0.j,0.+0.j,0.+0.j,0.+0.j,0.+0.j],
@@ -63,3 +63,21 @@ print(basis)
 basis = np.dot(CCX, basis)
 print(basis)
 """
+
+test_circuit2 = Circuit(4, DEBUG_syntax_validation=False)
+test_circuit2.apply_operator("X3")
+test_circuit2.apply_operator("H0 H1 H2 H3")
+test_circuit2.apply_operator("CX3,0")
+test_circuit2.apply_operator("CX3,1")
+test_circuit2.apply_operator("CX3,2")
+test_circuit2.apply_operator("H0 H1 H2")
+test_circuit2.measure()
+print(test_circuit2.DEBUG_get_circuit_state())
+
+test_circuit3 = Circuit(8, DEBUG_syntax_validation=False)
+test_circuit3.apply_operator("H0 H1 H2 H3")
+test_circuit3.apply_operator("CX4,0")
+test_circuit3.apply_operator("CX7,3")
+test_circuit3.apply_operator("H0 H1 H2 H3")
+test_circuit3.measure()
+print(test_circuit3.DEBUG_get_circuit_state())

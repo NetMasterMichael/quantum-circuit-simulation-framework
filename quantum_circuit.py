@@ -3,7 +3,7 @@ import re
 
 class Circuit:
 
-    def __init__(self, qubits: int, operator_cache: bool = False, hardware_mode: str = 'CPU'):
+    def __init__(self, qubits: int, operator_cache: bool = False, hardware_mode: str = 'CPU', DEBUG_syntax_validation: bool = True):
         if qubits < 1:
             raise ValueError("Qubits parameter must be at least 1, got " + str(qubits))
 
@@ -53,6 +53,10 @@ class Circuit:
             'NOT' : 'X'
         }
 
+        # WARNING: This option is intended for testing new syntax before validation is implemented
+        #          Disabling this creates a risk of infinite loops or crashes!
+        self.DEBUG_syntax_validation = DEBUG_syntax_validation
+
 
     def reset_circuit_state(self):
         np = self.np
@@ -75,7 +79,8 @@ class Circuit:
 
         operator_key = self.translate_aliases(operator_key)
 
-        self.check_legal_syntax(operator_key)
+        if self.DEBUG_syntax_validation:
+            self.check_legal_syntax(operator_key)
 
         ## Tokenization
         # Remove spaces at start and end
@@ -87,29 +92,28 @@ class Circuit:
         # Tokenize into tuples
         aux_gates = []
         for token in tokenized_key:
-            aux_gates.append((token[0], int(token[1:])))
-        # Use insertion sort to sort the tuples
-        for i in range(1, len(aux_gates)):
-            selected_gate = aux_gates[i]
-            j = i - 1
-            while j >= 0 and aux_gates[j][1] > selected_gate[1]:
-                aux_gates[j + 1] = aux_gates[j]
-                j -= 1
-            aux_gates[j + 1] = selected_gate
+            # Check how many letters there are
+            token_cursor = 0
+            while token[token_cursor].isalpha():
+                token_cursor += 1
+            local_gate = token[:token_cursor]
+            # Get the wire(s)
+            wires = list(map(int, token[token_cursor:].split(",")))
+            aux_gates.append((local_gate, wires))
+        aux_gates.sort(key=lambda gw: gw[1][0])
 
         ## Padding
         # Pad empty space with I gates
         gate_cursor = 0
         gates = []
         for gate in aux_gates:
-            # Pad before gate with identity gates
-            while (gate_cursor < gate[1]):
-                gates.append(("I", gate_cursor))
-                gate_cursor += 1
+            while (gate_cursor < min(gate[1])):
+                    gates.append(("I", [gate_cursor]))
+                    gate_cursor += 1
                 
             # Add gate to list
             gates.append((gate[0], gate[1]))
-            gate_cursor += 1
+            gate_cursor += 1 + max(gate[1]) - min(gate[1])
 
         # gate_cursor should not be larger than the number of qubits. If so, this means more gates have been added than there are qubits in the circuit
         if gate_cursor > self._qubits:
@@ -117,13 +121,27 @@ class Circuit:
 
         # Pad with identity gates after all gates have been added
         while gate_cursor < self._qubits:
-            gates.append(("I", gate_cursor))
+            gates.append(("I", [gate_cursor]))
             gate_cursor += 1
 
+        # To add a check that the shape of the final matrix will match
+
         ## Parse tuples back into a string
-        output_key = gates[0][0] + str(gates[0][1])
-        for i in range(1, len(gates)):
-            output_key += " " + gates[i][0] + str(gates[i][1])
+        output_key = ""
+
+        for gate in gates:
+            # Build a string that supports multiple wires
+            wire_string = ""
+            for i in range(len(gate[1])):
+                if i > 0:
+                    wire_string += ","
+                wire_string += str(gate[1][i])
+
+            # First gate?
+            if output_key != "":
+                output_key += " "
+
+            output_key += gate[0] + wire_string
 
         return output_key
     
