@@ -53,10 +53,6 @@ class Circuit:
             'NOT' : 'X'
         }
 
-    
-    def get_circuit_state(self):
-        return self._circuit_state
-
 
     def reset_circuit_state(self):
         np = self.np
@@ -278,3 +274,7 @@ class Circuit:
         collapsed_circuit_state = np.zeros(2 ** self._qubits, dtype = complex)
         collapsed_circuit_state[outcome] = 1 + 0j
         self._circuit_state = collapsed_circuit_state
+        
+
+    def DEBUG_get_circuit_state(self):
+        return self._circuit_state

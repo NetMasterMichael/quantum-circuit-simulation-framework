@@ -49,8 +49,8 @@ class TestQuantumCircuit(unittest.TestCase):
             qubits = i
             testCircuit = Circuit(qubits)
             expectedState = generate_ket_0_state(qubits)
-            self.assertTrue(np.array_equal(testCircuit.get_circuit_state(), expectedState), 
-                msg = f"test_initialise_circuit: Test failed with {i} qubits;\nExpected: {expectedState}\nActual: {testCircuit.get_circuit_state()}")
+            self.assertTrue(np.array_equal(testCircuit.DEBUG_get_circuit_state(), expectedState), 
+                msg = f"test_initialise_circuit: Test failed with {i} qubits;\nExpected: {expectedState}\nActual: {testCircuit.DEBUG_get_circuit_state()}")
             print(f"test_initialise_circuit: Test passed with {i} qubits")
 
     def test_invalid_qubits(self):
@@ -125,8 +125,8 @@ class TestQuantumCircuit(unittest.TestCase):
                     U = np.kron(U, IDENTITY)
                 expectedState = np.dot(U, expectedState)
                 testCircuit.apply_operator(gate + "0")
-                self.assertTrue(np.array_equal(testCircuit.get_circuit_state(), expectedState), 
-                    msg = f"test_single_qubit_gate_start: Test failed with {gate} gate and {i} qubits;\nExpected: {expectedState}\nActual: {testCircuit.get_circuit_state()}")
+                self.assertTrue(np.array_equal(testCircuit.DEBUG_get_circuit_state(), expectedState), 
+                    msg = f"test_single_qubit_gate_start: Test failed with {gate} gate and {i} qubits;\nExpected: {expectedState}\nActual: {testCircuit.DEBUG_get_circuit_state()}")
                 print(f"test_single_qubit_gate_start: Test passed with {gate} gate and {i} qubits")
     
     def test_single_qubit_gate_end(self):
@@ -141,8 +141,8 @@ class TestQuantumCircuit(unittest.TestCase):
                 U = np.kron(U, SINGLE_QUBIT_GATES[gate])
                 expectedState = np.dot(U, expectedState)
                 testCircuit.apply_operator(gate + str(i - 1))
-                self.assertTrue(np.array_equal(testCircuit.get_circuit_state(), expectedState), 
-                    msg = f"test_single_qubit_gate_end: Test failed with {gate} gate and {i} qubits;\nExpected: {expectedState}\nActual: {testCircuit.get_circuit_state()}")
+                self.assertTrue(np.array_equal(testCircuit.DEBUG_get_circuit_state(), expectedState), 
+                    msg = f"test_single_qubit_gate_end: Test failed with {gate} gate and {i} qubits;\nExpected: {expectedState}\nActual: {testCircuit.DEBUG_get_circuit_state()}")
                 print(f"test_single_qubit_gate_end: Test passed with {gate} gate and {i} qubits")
 
     def test_uniform_single_qubit_gate(self):
@@ -157,8 +157,8 @@ class TestQuantumCircuit(unittest.TestCase):
                 expectedState = np.dot(U, expectedState)
                 U_key = generate_uniform_single_gate_circuit_DSL(gate, qubits)
                 testCircuit.apply_operator(U_key)
-                self.assertTrue(np.array_equal(testCircuit.get_circuit_state(), expectedState), 
-                    msg = f"test_uniform_single_qubit_gate: Test failed with {gate} gate and {i} qubits;\nExpected: {expectedState}\nActual: {testCircuit.get_circuit_state()}")
+                self.assertTrue(np.array_equal(testCircuit.DEBUG_get_circuit_state(), expectedState), 
+                    msg = f"test_uniform_single_qubit_gate: Test failed with {gate} gate and {i} qubits;\nExpected: {expectedState}\nActual: {testCircuit.DEBUG_get_circuit_state()}")
                 print(f"test_uniform_single_qubit_gate: Test passed with {gate} gate and {i} qubits")
 
     def test_measurement(self):
@@ -168,14 +168,14 @@ class TestQuantumCircuit(unittest.TestCase):
             # testCircuit is initialised as |0..0>, check that we measure zero
             expectedState = generate_ket_0_state(qubits)
             testCircuit.measure()
-            self.assertTrue(np.array_equal(testCircuit.get_circuit_state(), expectedState))
+            self.assertTrue(np.array_equal(testCircuit.DEBUG_get_circuit_state(), expectedState))
             print(f"test_measurement: Test measurement of |{'0' * qubits}> state passed")
 
             # Apply X⊗n to testCircuit to get the state |1..1>, then check measurement
             expectedState = generate_ket_1_state(qubits)
             testCircuit.apply_operator(generate_uniform_single_gate_circuit_DSL("X", qubits))
             testCircuit.measure()
-            self.assertTrue(np.array_equal(testCircuit.get_circuit_state(), expectedState))
+            self.assertTrue(np.array_equal(testCircuit.DEBUG_get_circuit_state(), expectedState))
             print(f"test_measurement: Test measurement of |{'1' * qubits}> state passed")
 
             # Revert circuit to |0..0> and apply Y⊗n to get |i..i>, then check that it collapses to |1..1>
@@ -183,7 +183,7 @@ class TestQuantumCircuit(unittest.TestCase):
             testCircuit.apply_operator(generate_uniform_single_gate_circuit_DSL("X", qubits))
             testCircuit.apply_operator(generate_uniform_single_gate_circuit_DSL("Y", qubits))
             testCircuit.measure()
-            self.assertTrue(np.array_equal(testCircuit.get_circuit_state(), expectedState))
+            self.assertTrue(np.array_equal(testCircuit.DEBUG_get_circuit_state(), expectedState))
             print(f"test_measurement: Test measurement of |{'1' * qubits}> state collapsed from complex plane passed")
 
     def test_random_measurement_sampling(self):
@@ -200,7 +200,7 @@ class TestQuantumCircuit(unittest.TestCase):
                     testCircuit.reset_circuit_state()
                     testCircuit.apply_operator(generate_uniform_single_gate_circuit_DSL("H", qubits))
                     testCircuit.measure()
-                    collapsed_state = testCircuit.get_circuit_state()
+                    collapsed_state = testCircuit.DEBUG_get_circuit_state()
                     for k in range(0, 2 ** qubits):
                         if collapsed_state[k] == 1:
                             seen_states.add(k)
@@ -228,7 +228,7 @@ class TestQuantumCircuit(unittest.TestCase):
                 testCircuit.reset_circuit_state()
                 testCircuit.apply_operator("H0")
                 testCircuit.measure()
-                measuredState = testCircuit.get_circuit_state()
+                measuredState = testCircuit.DEBUG_get_circuit_state()
                 self.assertTrue(np.array_equal(accepted_0_state, measuredState) | np.array_equal(accepted_1_state, measuredState))
             print(f"test_partial_superposition_measurement: Test passed with {i} qubits")
         
