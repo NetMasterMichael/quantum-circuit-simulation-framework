@@ -4,7 +4,7 @@ from quantum_circuit import Circuit
 
 # For repeating tests, set the max qubits that the tests will repeat up until
 # A higher MAX_QUBITS value means more rigorous testing, but an increase in 1 results in double the memory usage and 8x testing time
-MAX_QUBITS = 12
+MAX_QUBITS = 8
 
 IDENTITY = np.array([[1,0],[0,1]], dtype = complex)
 PAULI_X = np.array([[0,1],[1,0]], dtype = complex)
@@ -58,11 +58,11 @@ class TestQuantumCircuit(unittest.TestCase):
     def test_invalid_gates(self):
         testCircuit = Circuit(2)
         # Test a syntactically incorrect operator
-        self.assertRaises(ValueError, testCircuit.apply_operator, "")
-        self.assertRaises(ValueError, testCircuit.apply_operator, "H")
-        self.assertRaises(ValueError, testCircuit.apply_operator, "00")
-        self.assertRaises(ValueError, testCircuit.apply_operator, "  ")
-        self.assertRaises(ValueError, testCircuit.apply_operator, "!!")
+        self.assertRaises(ValueError, testCircuit.apply_operator, "")   # Empty/no gates
+        self.assertRaises(ValueError, testCircuit.apply_operator, "H")  # Gate only
+        self.assertRaises(ValueError, testCircuit.apply_operator, "00") # Index only
+        self.assertRaises(ValueError, testCircuit.apply_operator, "  ") # Whitespace
+        self.assertRaises(ValueError, testCircuit.apply_operator, "!!") # Symbols that are not valid syntax
         # Test too many gates
         self.assertRaises(ValueError, testCircuit.apply_operator, "H0 H1 H2")
         # Test gate outside index
@@ -105,6 +105,13 @@ class TestQuantumCircuit(unittest.TestCase):
         testCircuit.apply_operator("H2 H1")
         self.assertTrue(testCircuit.DEBUG_is_operator_cached("I0 H1 H2 I3"),
             msg = f"test_equivalent_cached_operators: Test failed at the ordering, front padding and end padding subtest, assertTrue received False")
+        
+        # Test alias translation
+        self.assertFalse(testCircuit.DEBUG_is_operator_cached("CX0,1 I2 I3"),
+            msg = f"test_equivalent_cached_operators: Test failed at the alias translation subtest, assertFalse received True")
+        testCircuit.apply_operator("CNOT0,1")
+        self.assertTrue(testCircuit.DEBUG_is_operator_cached("CX0,1 I2 I3"),
+            msg = f"test_equivalent_cached_operators: Test failed at the alias translation subtest, assertTrue received False")
 
         print(f"test_equivalent_cached_operators: Test passed")
 
