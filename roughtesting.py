@@ -74,7 +74,7 @@ test_circuit2.apply_operator("H0 H1 H2")
 test_circuit2.measure()
 print(test_circuit2.DEBUG_get_circuit_state())
 
-test_circuit3 = Circuit(8, DEBUG_syntax_validation=False)
+test_circuit3 = Circuit(8, DEBUG_syntax_validation=True)
 test_circuit3.apply_operator("H0 H1 H2 H3")
 test_circuit3.apply_operator("CX4,0")
 test_circuit3.apply_operator("CX7,3")

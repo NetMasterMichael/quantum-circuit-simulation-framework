@@ -156,6 +156,8 @@ class Circuit:
 
 
     def check_legal_syntax(self, operator_key):
+        # This is quite a rudimentary way of checking the syntax
+        # Someday this entire process will be refactored to a cleaner parser and I will write a EBNF grammar for the DSL, but there are other priorities first
 
         stripped_key = operator_key.strip(" ")
         tokenized_key = re.split(" ", stripped_key)
@@ -176,9 +178,9 @@ class Circuit:
                 raise ValueError(f"Invalid gate provided: Received {token}, {gate} cannot be resolved to a valid gate")
 
             # Index check
-            gate_indices = token[:operator_cursor]
-            gate_indices.split(",")
-            for gate_index in gate_indices:
+            gate_indices = token[operator_cursor + 1:] # Indices should start at the index after the operator
+            split_gate_indices = gate_indices.split(",")
+            for gate_index in split_gate_indices:
                 if int(gate_index) > self._qubits:
                     raise ValueError(f"Invalid gate provided: Received {token}, applies to wire {gate_index} but there are only {str(self._qubits)} qubits")
 
