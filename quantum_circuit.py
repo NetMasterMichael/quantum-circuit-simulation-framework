@@ -150,7 +150,7 @@ class Circuit:
 
         new_ok = operator_key
         for alias, resolution in self.ALIASES.items():
-            new_ok.replace(alias, resolution)
+            new_ok = new_ok.replace(alias, resolution)
 
         return new_ok
 
