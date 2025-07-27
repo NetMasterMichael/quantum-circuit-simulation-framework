@@ -4,7 +4,7 @@ from quantum_circuit import Circuit
 
 # For repeating tests, set the max qubits that the tests will repeat up until
 # A higher MAX_QUBITS value means more rigorous testing, but an increase in 1 results in double the memory usage and 8x testing time
-MAX_QUBITS = 8
+MAX_QUBITS = 12
 
 IDENTITY = np.array([[1,0],[0,1]], dtype = complex)
 PAULI_X = np.array([[0,1],[1,0]], dtype = complex)
@@ -63,10 +63,20 @@ class TestQuantumCircuit(unittest.TestCase):
         self.assertRaises(ValueError, testCircuit.apply_operator, "00") # Index only
         self.assertRaises(ValueError, testCircuit.apply_operator, "  ") # Whitespace
         self.assertRaises(ValueError, testCircuit.apply_operator, "!!") # Symbols that are not valid syntax
+
         # Test too many gates
         self.assertRaises(ValueError, testCircuit.apply_operator, "H0 H1 H2")
+
         # Test gate outside index
         self.assertRaises(ValueError, testCircuit.apply_operator, "H99999")
+        self.assertRaises(ValueError, testCircuit.apply_operator, "CNOT0,99999")
+        self.assertRaises(ValueError, testCircuit.apply_operator, "CNOT99999,0")
+
+        # Test invalid syntax splitting indices in a controlled gate
+        self.assertRaises(ValueError, testCircuit.apply_operator, "CNOT0;1")
+        self.assertRaises(ValueError, testCircuit.apply_operator, "CNOT0#1")
+        self.assertRaises(ValueError, testCircuit.apply_operator, "CNOT0.1")
+
         print(f"test_invalid_gates: Test passed")
 
     def test_equivalent_cached_operators(self):
@@ -234,3 +244,58 @@ class TestQuantumCircuit(unittest.TestCase):
                 self.assertTrue(np.array_equal(accepted_0_state, measuredState) | np.array_equal(accepted_1_state, measuredState))
             print(f"test_partial_superposition_measurement: Test passed with {i} qubits")
         
+    def test_cnot_compilation(self):
+        testCircuit = Circuit(2, operator_cache = True)
+        testCircuit.apply_operator("CNOT1,0")
+        testCircuit.apply_operator("CNOT0,1")
+        # Check correctness against known correct CNOT matrix
+        cnot = np.array([[1,0,0,0],[0,1,0,0],[0,0,0,1],[0,0,1,0]], dtype = complex)
+        self.assertTrue(np.array_equal(cnot, testCircuit._operator_cache["CX1,0"]))
+        reverse_cnot = np.array([[1,0,0,0],[0,0,0,1],[0,0,1,0],[0,1,0,0]], dtype = complex)
+        self.assertTrue(np.array_equal(reverse_cnot, testCircuit._operator_cache["CX0,1"]))
+        print(f"test_cnot_compilation: Test passed")
+
+    def test_cnot_execution(self):
+        for i in range(2, MAX_QUBITS + 1):
+            qubits = i
+            testCircuit = Circuit(qubits, operator_cache = True)
+
+            ## Test flipping a target when the control wire is 1
+            testCircuit.apply_operator("X0")
+            # Apply CNOT that targets last wire
+            testCircuit.apply_operator(f"CNOT{qubits - 1},0")
+            testCircuit.apply_operator("X0")
+            circuit_state = testCircuit.DEBUG_get_circuit_state()
+            # Check the 1st index i.e. the circuit state is transformed to |0>⊗(n-1)|1>
+            self.assertEqual(circuit_state[1], 1 + 0j)
+
+            ## Test doing nothing when the control wire is 0
+            # Apply CNOT that targets last wire
+            testCircuit.apply_operator(f"CNOT{qubits - 1},0")
+            # Check the 1st index i.e. the circuit state is still |0>⊗(n-1)|1>
+            self.assertEqual(circuit_state[1], 1 + 0j)
+
+            print(f"test_cnot_execution: Test passed with {i} qubits")
+
+    def test_entanglement(self):
+        for i in range(2, MAX_QUBITS + 1):
+            qubits = i
+            outcome_ghz_0 = np.zeros(2 ** qubits, dtype = complex)
+            outcome_ghz_0[0] = 1 + 0j
+            outcome_ghz_1 = np.zeros(2 ** qubits, dtype = complex)
+            outcome_ghz_1[(2 ** qubits) - 1] = 1 + 0j
+            samples = 100
+            testCircuit = Circuit(qubits, operator_cache = True)
+            for j in range(0, samples):
+                # Reset circuit and apply Hadamard on first wire
+                testCircuit.reset_circuit_state()
+                testCircuit.apply_operator("H0")
+                for k in range(0, qubits - 1):
+                    testCircuit.apply_operator(f"CNOT{k+1},{k}")
+                # Collapse state
+                testCircuit.measure()
+                # Check that it collapses to one of the two GHZ states
+                state = testCircuit.DEBUG_get_circuit_state()
+                if not (np.array_equal(outcome_ghz_0, state) or np.array_equal(outcome_ghz_1, state)):
+                    self.fail(f"test_entanglement: Test failed with {i} qubits, circuit collapsed to a state which was not a GHZ state")
+            print(f"test_entanglement: Test passed with {i} qubits")
