@@ -116,12 +116,7 @@ class TestQuantumCircuit(unittest.TestCase):
         self.assertTrue(testCircuit.DEBUG_is_operator_cached("I0 H1 H2 I3"),
             msg = f"test_equivalent_cached_operators: Test failed at the ordering, front padding and end padding subtest, assertTrue received False")
         
-        # Test alias translation
-        self.assertFalse(testCircuit.DEBUG_is_operator_cached("CX0,1 I2 I3"),
-            msg = f"test_equivalent_cached_operators: Test failed at the alias translation subtest, assertFalse received True")
-        testCircuit.apply_operator("CNOT0,1")
-        self.assertTrue(testCircuit.DEBUG_is_operator_cached("CX0,1 I2 I3"),
-            msg = f"test_equivalent_cached_operators: Test failed at the alias translation subtest, assertTrue received False")
+        # Alias translation testing is separate, in order to test all possible aliases
 
         print(f"test_equivalent_cached_operators: Test passed")
 
@@ -243,6 +238,32 @@ class TestQuantumCircuit(unittest.TestCase):
                 measuredState = testCircuit.DEBUG_get_circuit_state()
                 self.assertTrue(np.array_equal(accepted_0_state, measuredState) | np.array_equal(accepted_1_state, measuredState))
             print(f"test_partial_superposition_measurement: Test passed with {i} qubits")
+
+    def test_alias_translation(self):
+        testCircuit = Circuit(4, operator_cache = True)
+
+        # CNOT -> CX
+        self.assertFalse(testCircuit.DEBUG_is_operator_cached("CX0,1 I2 I3"),
+            msg = f"test_alias_translation: Test failed when translating CNOT to CX, assertFalse received True")
+        testCircuit.apply_operator("CNOT0,1")
+        self.assertTrue(testCircuit.DEBUG_is_operator_cached("CX0,1 I2 I3"),
+            msg = f"test_alias_translation: Test failed when translating CNOT to CX, assertTrue received False")
+        
+        # TOFFOLI -> CCX
+        self.assertFalse(testCircuit.DEBUG_is_operator_cached("CCX0,1,2 I3"),
+            msg = f"test_alias_translation: Test failed when translating TOFFOLI to CCX, assertFalse received True")
+        testCircuit.apply_operator("TOFFOLI0,1,2")
+        self.assertTrue(testCircuit.DEBUG_is_operator_cached("CCX0,1,2 I3"),
+            msg = f"test_alias_translation: Test failed when translating TOFFOLI to CCX, assertTrue received False")
+        
+        # TOFF -> CCX
+        self.assertFalse(testCircuit.DEBUG_is_operator_cached("I0 CCX1,2,3"),
+            msg = f"test_alias_translation: Test failed when translating TOFF to CCX, assertFalse received True")
+        testCircuit.apply_operator("TOFF1,2,3")
+        self.assertTrue(testCircuit.DEBUG_is_operator_cached("I0 CCX1,2,3"),
+            msg = f"test_alias_translation: Test failed when translating TOFF to CCX, assertTrue received False")
+        
+        print(f"test_alias_translation: Test passed")
         
     def test_cnot_compilation(self):
         testCircuit = Circuit(2, operator_cache = True)
