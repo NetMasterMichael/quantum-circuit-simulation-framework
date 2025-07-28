@@ -50,7 +50,9 @@ class Circuit:
         }
 
         self.ALIASES = {
-            'NOT' : 'X'
+            'NOT' : 'X',
+            'TOFFOLI' : 'CCX',
+            'TOFF' : 'CCX'
         }
 
         # WARNING: This option is intended for testing new syntax before validation is implemented
