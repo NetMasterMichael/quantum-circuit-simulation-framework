@@ -1,9 +1,13 @@
-# Quantum Circuit Simulation Framework
-Welcome to the QCSF repository! This project aims to create a working simulation of a quantum computer with only pure Python and NumPy, based on the circuit model. This is to build upon and put into practice what I learnt while taking the CS3600 Quantum Computation module at Royal Holloway, University of London, and enable myself and others interested in quantum computing to experiment with algorithms hands-on at a small number of qubits, without having access to a real quantum computer.
+![Volq](docs/banner.png)
 
-> Important note: This project does not aim to solve classically difficult problems at quantum running times on a classical computer. Instead, it aims to simulate qubits and prove that quantum algorithms do indeed find correct solutions through quantum mechanics (i.e. lots of linear algebra!).
+# WELCOME
+Volq is a programming language that enables you to simulate quantum computing algorithms on your computer. You can play around with existing algorithms to better understand how they solve problems, or write your own from scratch using the easy to learn DSL based on the quantum circuit model.
+
+This project is 100% coded in Python with NumPy.
+
+> Important note: This project does not aim to solve classically difficult problems at quantum running times on a classical computer. Instead, it aims to prove mathematically that quantum algorithms do indeed find correct solutions through quantum mechanics (i.e. lots of linear algebra!).
 ## Current Features of v0.2.0-alpha
-- Functional quantum circuit model with probabilistic measurement and single qubit gates, including:
+- Functional quantum circuit model backend with probabilistic measurement and single qubit gates, including:
   - Identity (**I**) - No effect on the qubit
   - Hadamard (**H**) - Transforms a qubit into & out of superposition
   - Pauli X (**X**) - Flips a qubit state
@@ -17,7 +21,9 @@ Welcome to the QCSF repository! This project aims to create a working simulation
 - Support for running on the CPU or GPU
 - Thorough unit testing, to rigorously prove the validity and correctness of the framework
 ## Planned Features
+- Frontend interpreter for running code
 - SWAP and Fredkin (CSWAP) gate generation
+- Partial measurement
 - Oracles and Phase Oracles, with predefined functions and support for user-defined functions
 - Quantum Fourier Transforms
 - Simulations of several quantum algorithms for solving different problems
@@ -29,3 +35,4 @@ Welcome to the QCSF repository! This project aims to create a working simulation
 	- Shor's Algorithm
 - Optimisations to speed up simulation of circuits
 - Extensive documentation on the quantum circuit model and adjacent algorithms
+
