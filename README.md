@@ -1,6 +1,10 @@
 ![Volq](docs/banner.png)
 
-# WELCOME
+<h1 align="center">
+  <br>
+  WELCOME
+</h1>
+
 Volq is a programming language that enables you to simulate quantum computing algorithms on your computer. You can play around with existing algorithms to better understand how they solve problems, or write your own from scratch using the easy to learn DSL based on the quantum circuit model.
 
 This project is 100% coded in Python with NumPy.
