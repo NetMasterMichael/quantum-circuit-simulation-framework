@@ -8,3 +8,7 @@ class Opcode(enum.Enum):
     MEASURE = "MEASURE"
     SHOW = "SHOW"
 
+class Instruction():
+    def __init__(self, opcode: Opcode, operand: str):
+        self.opcode = opcode
+        self.operand = operand
