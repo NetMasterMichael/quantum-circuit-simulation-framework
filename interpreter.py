@@ -29,7 +29,7 @@ class Interpreter:
         
         # Parse the program into a stack
         for line in program:
-            opcode = None
+            instruction = None
             line_tokens = line.split(" ")
             match line_tokens[0]:
                 case "\n":
@@ -37,22 +37,23 @@ class Interpreter:
                 case "":
                     continue
                 case "QUBITS":
-                    opcode = Opcode.QUBITS
+                    instruction = Instruction(Opcode.QUBITS, int(line_tokens[1]))
                 case "RUNS":
-                    opcode = Opcode.RUNS
+                    instruction = Instruction(Opcode.RUNS, int(line_tokens[1]))
                 case "INIT":
-                    opcode = Opcode.INIT
+                    instruction = Instruction(Opcode.INIT)
                 case "APPLY":
-                    opcode = Opcode.APPLY
+                    # Backend circuit class handles all the parsing, so just pass the whole string as operand
+                    instruction = Instruction(Opcode.APPLY, line_tokens[1])
                 case "MEASURE":
-                    opcode = Opcode.MEASURE
+                    instruction = Instruction(Opcode.MEASURE, line_tokens[1])
                 case "SHOW":
-                    opcode = opcode.SHOW
+                    instruction = Instruction(Opcode.SHOW, line_tokens[1])
                 case _:
                     print(f"Fatal error: {line_tokens[0]} is not a valid opcode")
                     quit()
 
-            self._execution_stack.append(Instruction(opcode, line_tokens[1]))
+            self._execution_stack.append(instruction)
 
         print(self._execution_stack)
 

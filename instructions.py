@@ -11,6 +11,6 @@ class Opcode(enum.Enum):
 
 class Instruction():
 
-    def __init__(self, opcode: Opcode, operand: str):
+    def __init__(self, opcode: Opcode, operand: any = None):
         self.opcode = opcode
         self.operand = operand
