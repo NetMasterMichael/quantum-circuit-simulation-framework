@@ -300,70 +300,72 @@ class Circuit:
     
     def get_state_as_string(self):
         np = self.np
-        # Get list of all states with a non-zero magnitude
+        
+        ## Get list of all states with a non-zero amplitude
         all_circuit_states = []
         for i in range(2 ** self._qubits):
             if (np.real(self._circuit_state[i]) != 0 or np.imag(self._circuit_state[i]) != 0):
                 all_circuit_states.append(i)
+
+        print(all_circuit_states)
  
+        ## Construct string of kets
         output = ""
         for state in all_circuit_states:
-            magnitude = self._circuit_state[state]
+            amplitude = self._circuit_state[state]
             # Separate real and imaginary parts
-            mag_real = np.real(magnitude)
-            mag_imag = np.imag(magnitude)
+            amp_real = np.real(amplitude)
+            amp_imag = np.imag(amplitude)
             state_string = ""
             # Add real part
             # If it is equal to 1, we don't add the real part
-            if (mag_real != 0 and np.abs(mag_real) != 1):
-                state_string += str(np.abs(mag_real))
+            if amp_real != 0 and np.abs(amp_real) != 1:
+                state_string += str(np.abs(amp_real))
             # Add imaginary part
-            if (mag_imag != 0):
+            if amp_imag != 0:
                 # If there's a real number, add the sign in the complex number
-                if (mag_real != 0 and mag_imag < 0):
+                if amp_real != 0 and amp_imag < 0:
                     state_string += "-"
-                elif (mag_real != 0 and mag_imag > 0):
+                elif amp_real != 0 and amp_imag > 0:
                     state_string += "+"
 
-                # Simplify algebraically if mag_imag == 1
-                if (np.abs(mag_imag) == 1):
+                # Simplify algebraically if amp_imag == 1
+                if np.abs(amp_imag) == 1:
                     state_string += "i"
                 else:
-                    state_string += str(np.abs(mag_imag)) + "i"
+                    state_string += str(np.abs(amp_imag)) + "i"
 
             # Add ket of state
             state_string += "|" + self.generate_bitstring(state) + "⟩"
 
             ## Add state string to output
-            # Positive real and first iteration
-            if (output == "" and mag_real > 0):
-                output += state_string
-            # Positive imag and first iteration
-            elif (output == "" and mag_real == 0 and mag_imag > 0):
-                output += state_string
-            # Negative real and first iteration
-            elif (output == "" and mag_real < 0):
-                output += "-" + state_string
-            # Negative imag and first iteration
-            elif (output == "" and mag_real == 0 and mag_imag < 0):
-                output += "-" + state_string
-            # Positive real or positive imag w/o real
-            elif (mag_real > 0 or (mag_real == 0 and mag_imag > 0)):
-                output += " + " + state_string
-            # Negative real or negative imag w/o real
-            elif (mag_real < 0 or (mag_real == 0 and mag_imag < 0)):
-                output += " - " + state_string
+            # First iteration?
+            if output == "":
+                # Real part or imag part w/o real part is positive
+                if amp_real > 0 or (amp_real == 0 and amp_imag > 0):
+                    output += state_string
+                # Real part or imag part w/o real part is negative
+                elif amp_real < 0 or (amp_real == 0 and amp_imag < 0):
+                    output += "-" + state_string
+            
+            # Not first iteration, so add operands between kets
+            else:
+                # Real part or imag part w/o real part is positive
+                if amp_real > 0 or (amp_real == 0 and amp_imag > 0):
+                    output += " + " + state_string
+                # Real part or imag part w/o real part is negative
+                elif amp_real < 0 or (amp_real == 0 and amp_imag < 0):
+                    output += " - " + state_string
 
         return output
 
 
     def generate_bitstring(self, basis):
-        tracked_basis = basis
         bitstring = ""
         for i in range(self._qubits):
-            if (tracked_basis >= 2 ** (self._qubits - i - 1)):
+            if basis >= 2 ** (self._qubits - i - 1):
                 bitstring = "1" + bitstring
-                tracked_basis -= 2 ** (self._qubits - i - 1)
+                basis -= 2 ** (self._qubits - i - 1)
             else:
                 bitstring = "0" + bitstring
         return bitstring
