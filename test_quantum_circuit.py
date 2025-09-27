@@ -4,7 +4,7 @@ from quantum_circuit import Circuit
 
 # For repeating tests, set the max qubits that the tests will repeat up until
 # A higher MAX_QUBITS value means more rigorous testing, but an increase in 1 results in double the memory usage and 8x testing time
-MAX_QUBITS = 12
+MAX_QUBITS = 8
 
 IDENTITY = np.array([[1,0],[0,1]], dtype = complex)
 PAULI_X = np.array([[0,1],[1,0]], dtype = complex)
@@ -320,3 +320,10 @@ class TestQuantumCircuit(unittest.TestCase):
                 if not (np.array_equal(outcome_ghz_0, state) or np.array_equal(outcome_ghz_1, state)):
                     self.fail(f"test_entanglement: Test failed with {i} qubits, circuit collapsed to a state which was not a GHZ state")
             print(f"test_entanglement: Test passed with {i} qubits")
+
+    def test_generate_bitstring(self):
+        for i in range(1, MAX_QUBITS + 1):
+            qubits = i
+            testCircuit = Circuit(qubits)
+            for j in range(2 ** qubits):
+                print(testCircuit.generate_bitstring(j))

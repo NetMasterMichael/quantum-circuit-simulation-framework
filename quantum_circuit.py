@@ -296,6 +296,23 @@ class Circuit:
         collapsed_circuit_state = np.zeros(2 ** self._qubits, dtype = complex)
         collapsed_circuit_state[outcome] = 1 + 0j
         self._circuit_state = collapsed_circuit_state
+
+    
+    def get_state_as_string(self):
+        # currently an empty stub
+        return
+
+
+    def generate_bitstring(self, basis):
+        tracked_basis = basis
+        bitstring = ""
+        for i in range(self._qubits):
+            if (tracked_basis >= 2 ** (self._qubits - i - 1)):
+                bitstring = "1" + bitstring
+                tracked_basis -= 2 ** (self._qubits - i - 1)
+            else:
+                bitstring = "0" + bitstring
+        return bitstring
         
 
     def DEBUG_get_circuit_state(self):
