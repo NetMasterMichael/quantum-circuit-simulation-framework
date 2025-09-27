@@ -308,6 +308,22 @@ class Circuit:
                 all_circuit_states.append(i)
 
         print(all_circuit_states)
+
+        # Sort states by basis position
+        sorted_all_circuit_states = []
+        for i in range(self._qubits):
+            step_size = 2 ** (self._qubits - i - 1)
+            index = 0
+            for j in range(int((self._qubits ** 2) / step_size)):
+                if index in sorted_all_circuit_states:
+                    index += step_size
+                elif index in all_circuit_states:
+                    sorted_all_circuit_states.append(index)
+                    index += step_size
+
+        all_circuit_states = sorted_all_circuit_states
+
+        print(all_circuit_states)
  
         ## Construct string of kets
         output = ""
