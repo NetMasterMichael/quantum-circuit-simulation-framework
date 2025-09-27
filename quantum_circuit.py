@@ -299,8 +299,56 @@ class Circuit:
 
     
     def get_state_as_string(self):
-        # currently an empty stub
-        return
+        np = self.np
+        # Get list of all states with a non-zero magnitude
+        all_circuit_states = []
+        for i in range(2 ** self._qubits):
+            if (np.real(self._circuit_state[i]) != 0 or np.imag(self._circuit_state[i]) != 0):
+                all_circuit_states.append(i)
+ 
+        output = ""
+        for state in all_circuit_states:
+            magnitude = self._circuit_state[state]
+            # Separate real and imaginary parts
+            mag_real = np.real(magnitude)
+            mag_imag = np.imag(magnitude)
+            state_string = ""
+            # Add real part
+            # If it is equal to 1, we don't add the real part
+            if (mag_real != 0 and np.abs(mag_real) != 1):
+                state_string += str(np.abs(mag_real))
+            # Add imaginary part
+            if (mag_imag != 0):
+                # Sign in complex number
+                if (mag_real != 0 and mag_imag < 0):
+                    state_string += "-"
+                elif (mag_real != 0 and mag_imag > 0):
+                    state_string += "+"
+
+                # Simplify algebraically if mag_imag == 1
+                if (np.abs(mag_imag) == 1):
+                    state_string += "i"
+                else:
+                    state_string += str(np.abs(mag_imag)) + "i"
+
+            # Add ket
+            state_string += "|" + self.generate_bitstring(state) + ">"
+
+            ## Add state string to output
+            # Positive real and first iteration
+            if (output == "" and mag_real > 0):
+                output += state_string
+            # Positive imag and first iteration
+            elif (output == "" and mag_real == 0 and mag_imag > 0):
+                output += state_string
+            # Positive real or positive imag w/o real
+            elif (mag_real > 0 or (mag_real == 0 and mag_imag > 0)):
+                output += " + " + state_string
+            # Negative real or negative imag w/o real
+            elif (mag_real < 0 or (mag_real == 0 and mag_imag > 0)):
+                output += " - " + state_string
+
+        return output
 
 
     def generate_bitstring(self, basis):
