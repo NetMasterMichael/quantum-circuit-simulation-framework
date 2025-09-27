@@ -319,7 +319,7 @@ class Circuit:
                 state_string += str(np.abs(mag_real))
             # Add imaginary part
             if (mag_imag != 0):
-                # Sign in complex number
+                # If there's a real number, add the sign in the complex number
                 if (mag_real != 0 and mag_imag < 0):
                     state_string += "-"
                 elif (mag_real != 0 and mag_imag > 0):
@@ -331,8 +331,8 @@ class Circuit:
                 else:
                     state_string += str(np.abs(mag_imag)) + "i"
 
-            # Add ket
-            state_string += "|" + self.generate_bitstring(state) + ">"
+            # Add ket of state
+            state_string += "|" + self.generate_bitstring(state) + "⟩"
 
             ## Add state string to output
             # Positive real and first iteration
