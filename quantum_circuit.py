@@ -351,7 +351,7 @@ class Circuit:
             elif (mag_real > 0 or (mag_real == 0 and mag_imag > 0)):
                 output += " + " + state_string
             # Negative real or negative imag w/o real
-            elif (mag_real < 0 or (mag_real == 0 and mag_imag > 0)):
+            elif (mag_real < 0 or (mag_real == 0 and mag_imag < 0)):
                 output += " - " + state_string
 
         return output
