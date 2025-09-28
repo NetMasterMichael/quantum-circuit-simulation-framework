@@ -4,7 +4,7 @@ from quantum_circuit import Circuit
 
 # For repeating tests, set the max qubits that the tests will repeat up until
 # A higher MAX_QUBITS value means more rigorous testing, but an increase in 1 results in double the memory usage and 8x testing time
-MAX_QUBITS = 8
+MAX_QUBITS = 12
 
 IDENTITY = np.array([[1,0],[0,1]], dtype = complex)
 PAULI_X = np.array([[0,1],[1,0]], dtype = complex)
@@ -36,6 +36,13 @@ def generate_uniform_single_gate_circuit_DSL(gate: str, qubits: int):
         dsl += " " + gate + str(i)
     return dsl
 
+def convert_bitstring_to_decimal(bitstring):
+    decimal_value = 0
+    for i in range(len(bitstring)):
+        # If i'th wire in bitstring == "1" starting from the right side, then add 2^i to decimal_value
+        if bitstring[len(bitstring) - i - 1] == "1":
+            decimal_value += 2 ** i
+    return decimal_value
 
 class TestQuantumCircuit(unittest.TestCase):
 
@@ -326,4 +333,6 @@ class TestQuantumCircuit(unittest.TestCase):
             qubits = i
             testCircuit = Circuit(qubits)
             for j in range(2 ** qubits):
-                print(testCircuit.generate_bitstring(j))
+                converted_generated_bitstring = convert_bitstring_to_decimal(testCircuit.generate_bitstring(j))
+                self.assertEqual(j, converted_generated_bitstring, f"test_generate_bitstring: Test failed with {i} qubits, generate_bitstring() generated an incorrect bitstring. Expected {j}, received {converted_generated_bitstring}")
+            print(f"test_generate_bitstring: Test passed with {i} qubits")
