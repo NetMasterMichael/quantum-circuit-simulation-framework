@@ -3,7 +3,7 @@ import re
 
 class Circuit:
 
-    def __init__(self, qubits: int, operator_cache: bool = False, hardware_mode: str = 'CPU', DEBUG_syntax_validation: bool = True):
+    def __init__(self, qubits: int, operator_cache: bool = False, hardware_mode: str = 'CPU', DEBUG_syntax_validation: bool = True, output_rounding = 5):
         if qubits < 1:
             raise ValueError("Qubits parameter must be at least 1, got " + str(qubits))
 
@@ -27,6 +27,7 @@ class Circuit:
         self._circuit_state[0] = 1
         self._operator_cache_state = operator_cache
         self._operator_cache = {}
+        self._output_rounding = output_rounding
 
         # Gates
         self.IDENTITY = np.array([[1,0],[0,1]], dtype = complex)
@@ -296,6 +297,88 @@ class Circuit:
         collapsed_circuit_state = np.zeros(2 ** self._qubits, dtype = complex)
         collapsed_circuit_state[outcome] = 1 + 0j
         self._circuit_state = collapsed_circuit_state
+
+    
+    def get_state_as_string(self):
+        np = self.np
+        
+        ## Get list of all states with a non-zero amplitude
+        all_circuit_states = []
+        for i in range(2 ** self._qubits):
+            if (np.real(self._circuit_state[i]) != 0 or np.imag(self._circuit_state[i]) != 0):
+                all_circuit_states.append(i)
+
+        # Sort states by basis position
+        sorted_all_circuit_states = []
+
+        for i in range(2 ** self._qubits):
+            target_bitstring = self.generate_bitstring(i)
+            for j in all_circuit_states:
+                if self.generate_bitstring(j) == target_bitstring:
+                    sorted_all_circuit_states.append(j)
+
+        all_circuit_states = sorted_all_circuit_states
+
+        ## Construct string of kets
+        output = ""
+        for state in all_circuit_states:
+            amplitude = self._circuit_state[state]
+            # Separate real and imaginary parts
+            amp_real = np.round(np.real(amplitude), self._output_rounding)
+            amp_imag = np.round(np.imag(amplitude), self._output_rounding)
+            state_string = ""
+            # Add real part
+            # If it is equal to 1, we don't add the real part
+            if amp_real != 0 and np.abs(amp_real) != 1:
+                state_string += str(np.abs(amp_real))
+            # Add imaginary part
+            if amp_imag != 0:
+                # If there's a real number, add the sign in the complex number
+                if amp_real != 0 and amp_imag < 0:
+                    state_string += "-"
+                elif amp_real != 0 and amp_imag > 0:
+                    state_string += "+"
+
+                # Simplify algebraically if amp_imag == 1
+                if np.abs(amp_imag) == 1:
+                    state_string += "i"
+                else:
+                    state_string += str(np.abs(amp_imag)) + "i"
+
+            # Add ket of state
+            state_string += "|" + self.generate_bitstring(state) + "⟩"
+
+            ## Add state string to output
+            # First iteration?
+            if output == "":
+                # Real part or imag part w/o real part is positive
+                if amp_real > 0 or (amp_real == 0 and amp_imag > 0):
+                    output += state_string
+                # Real part or imag part w/o real part is negative
+                elif amp_real < 0 or (amp_real == 0 and amp_imag < 0):
+                    output += "-" + state_string
+            
+            # Not first iteration, so add operands between kets
+            else:
+                # Real part or imag part w/o real part is positive
+                if amp_real > 0 or (amp_real == 0 and amp_imag > 0):
+                    output += " + " + state_string
+                # Real part or imag part w/o real part is negative
+                elif amp_real < 0 or (amp_real == 0 and amp_imag < 0):
+                    output += " - " + state_string
+
+        return output
+
+
+    def generate_bitstring(self, basis):
+        bitstring = ""
+        for i in range(self._qubits):
+            if basis >= 2 ** (self._qubits - i - 1):
+                bitstring += "1"
+                basis -= 2 ** (self._qubits - i - 1)
+            else:
+                bitstring += "0"
+        return bitstring
         
 
     def DEBUG_get_circuit_state(self):

@@ -36,6 +36,13 @@ def generate_uniform_single_gate_circuit_DSL(gate: str, qubits: int):
         dsl += " " + gate + str(i)
     return dsl
 
+def convert_bitstring_to_decimal(bitstring):
+    decimal_value = 0
+    for i in range(len(bitstring)):
+        # If i'th wire in bitstring == "1" starting from the right side, then add 2^i to decimal_value
+        if bitstring[len(bitstring) - i - 1] == "1":
+            decimal_value += 2 ** i
+    return decimal_value
 
 class TestQuantumCircuit(unittest.TestCase):
 
@@ -320,3 +327,12 @@ class TestQuantumCircuit(unittest.TestCase):
                 if not (np.array_equal(outcome_ghz_0, state) or np.array_equal(outcome_ghz_1, state)):
                     self.fail(f"test_entanglement: Test failed with {i} qubits, circuit collapsed to a state which was not a GHZ state")
             print(f"test_entanglement: Test passed with {i} qubits")
+
+    def test_generate_bitstring(self):
+        for i in range(1, MAX_QUBITS + 1):
+            qubits = i
+            testCircuit = Circuit(qubits)
+            for j in range(2 ** qubits):
+                converted_generated_bitstring = convert_bitstring_to_decimal(testCircuit.generate_bitstring(j))
+                self.assertEqual(j, converted_generated_bitstring, f"test_generate_bitstring: Test failed with {i} qubits, generate_bitstring() generated an incorrect bitstring. Expected {j}, received {converted_generated_bitstring}")
+            print(f"test_generate_bitstring: Test passed with {i} qubits")
