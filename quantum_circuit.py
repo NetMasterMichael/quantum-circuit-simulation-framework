@@ -307,24 +307,17 @@ class Circuit:
             if (np.real(self._circuit_state[i]) != 0 or np.imag(self._circuit_state[i]) != 0):
                 all_circuit_states.append(i)
 
-        print(all_circuit_states)
-
         # Sort states by basis position
         sorted_all_circuit_states = []
-        for i in range(self._qubits):
-            step_size = 2 ** (self._qubits - i - 1)
-            index = 0
-            for j in range(int((self._qubits ** 2) / step_size)):
-                if index in sorted_all_circuit_states:
-                    index += step_size
-                elif index in all_circuit_states:
-                    sorted_all_circuit_states.append(index)
-                    index += step_size
+
+        for i in range(2 ** self._qubits):
+            target_bitstring = self.generate_bitstring(i)
+            for j in all_circuit_states:
+                if self.generate_bitstring(j) == target_bitstring:
+                    sorted_all_circuit_states.append(j)
 
         all_circuit_states = sorted_all_circuit_states
 
-        print(all_circuit_states)
- 
         ## Construct string of kets
         output = ""
         for state in all_circuit_states:
@@ -380,10 +373,10 @@ class Circuit:
         bitstring = ""
         for i in range(self._qubits):
             if basis >= 2 ** (self._qubits - i - 1):
-                bitstring = "1" + bitstring
+                bitstring += "1"
                 basis -= 2 ** (self._qubits - i - 1)
             else:
-                bitstring = "0" + bitstring
+                bitstring += "0"
         return bitstring
         
 
